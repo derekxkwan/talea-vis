@@ -4,9 +4,11 @@
 import * as THREE from "../build/three.module.js";
 import {OrbitControls} from "../lib/OrbitControls.js";
 
-let qual = 32;
-let radSeg = 5;
-let rad = 30;
+let bg = 0x00263f;
+let qual = 5;
+let radSeg = 10;
+let rad = 15;
+let lenMult = 3;
 const renderer = getRenderer();
 let scene = getScene();
 let camera = getCamera();
@@ -15,55 +17,95 @@ let wireframeMat = new THREE.LineBasicMaterial( { color: 0xffffff } );
 let controls = initControls(camera);
 //let controls = getControls(camera, renderer);
 
-let colorArray = [0xcccccc, 0x99448f, 0x9944f8]; 
-let matArray = Array.from({length: colorArray.length}, (x,i) => new THREE.MeshLambertMaterial( {color: colorArray[i], opacity: 1, wireframe: false, transparent: false}));
+let colorArray = {"a": {"val": 0xcccccc}, "b": {"val": 0x339acf}, "s": {"val": 0x3322fc}};
 
+let i = 0;
+for(let k in colorArray) {
+    let curColor = colorArray[k]["val"];
+    colorArray[k]["idx"] = i++;
+    colorArray[k]["mat"] = new THREE.MeshLambertMaterial( {color: curColor, opacity: 1, wireframe: false, transparent: false});
+};
+
+let matArray = Object.keys(colorArray).map((k) => colorArray[k]["mat"]);
+let mesh = makeSpiral(data1); 
   render();
 
 
 
 //========================================================
-function makeSpiral(cur_dict) {
-    let cur_len = cur_dict["total_len"];
-    let curve = makeConicalSpiral(201,5,cur_len,5);
-    let geom = new THREE.TubeBufferGeometry(curve, cur_len * qual, rad, radSeg, false);
+function makeSpiral(curDict) {
+    let curLen = curDict["total_len"];
+    let adjLen = curLen * lenMult;
+    //let curve = makeConicalSpiral(201,5,cur_len,5);
+    let curve = makeConchospiral(1.065,1.0, 1.1, adjLen);
+    let geom = new THREE.TubeBufferGeometry(curve, adjLen * qual, rad, radSeg, false);
     geom.clearGroups();
-    let stepSize = qual*radSeg*3; // because triangles i guess?
 
-    for(let curSeg in cur_dict["data"]) {
-
-    }
-
-    for(let i = 0; i < (qual*radSeg*cur_len*3); i += stepSize) {
+    let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
+   
+    /*
+    for(let i = 0; i < (qual*radSeg*adjLen*3); i += stepSize) {
         let idx = Math.floor(i/stepSize);
         geom.addGroup(i, stepSize, idx % colorArray.length);
     };
-
+    */
+    curDict["data"].forEach((curSec, i) => {
+        let curLen = curSec["qtr_len"];
+        let curIdx = curSec["qtr_index"];
+        let sprLen = getSpiralLen(curLen);
+        let sprIdx = getSpiralIdx(curIdx);
+        let curSubdiv = curSec["elt_subdiv"];
+        let curSubdivLen = Math.round(stepSize/curSubdiv);
+        let runIdx = sprIdx;
+        let eltLen = curSec["elts"].length;
+        //console.log(curIdx, curSubdivLen);
+        curSec["elts"].forEach((elt, j) => {
+            let curSublen = elt["len"];
+            let curLen2 = curSublen * curSubdivLen;
+            //let curSubidx = elt["subidx"];
+            let curType = elt["type"];
+            let curMat = colorArray[curType]["idx"];
+            //let curDir = elt["dir"];
+            if(j == (eltLen - 1)) curLen2 = (sprIdx + sprLen) - runIdx;
+            console.log(curMat, curLen2);
+            geom.addGroup(runIdx, curLen2, curMat);
+            runIdx += curLen2;
+        });
+    });
     let mesh = new THREE.Mesh(geom, matArray);
     scene.add(mesh);
     return mesh;
 }
 
+function getSpiralLen(len) {
+    return (qual*radSeg*3*lenMult * len);
+}
+
+function getSpiralIdx(idx) {
+    return (qual * radSeg * 3 * lenMult * idx);
+}   
+
 function initControls(camera) {
     let curCtrls = new OrbitControls(camera, renderer.domElement);
     //curCtrls.addEventListener('change', render);
-    curCtrls.target.set(0,20,100);
+    //curCtrls.target.set(0,20,100);
+    curCtrls.target.set(0,0, 0);
     //curCtrls.minDistance = 10;
     //curCtrls.maxDistance = 100;
     curCtrls.update();
     return curCtrls;
-}   
+}  
 
 function getScene() {
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xdaf1ff);
+    scene.background = new THREE.Color(bg);
     return scene;
   }
 
   function getCamera() {
     var aspectRatio = window.innerWidth / window.innerHeight;
     var camera = new THREE.PerspectiveCamera(50, aspectRatio, 0.1, 10000);
-//    camera.position.set(0, 1, -10);
+    //camera.position.set(0, 1, -10);
       //camera.position.set(0, 0, 50);
       camera.position.set(0,50,500);
 
@@ -75,7 +117,7 @@ function getScene() {
     //light.position.set(1, 1,1);
     scene.add(light);
 
-    var ambientLight = new THREE.AmbientLight(0xcccccc);
+    var ambientLight = new THREE.AmbientLight(0xffffff);
     scene.add(ambientLight);
     return light;
   }
@@ -108,6 +150,16 @@ function getScene() {
       let curve = new THREE.CatmullRomCurve3(cur_arr);
       return curve;
       } 
+
+function makeConchospiral(mu, a, c, num) {
+
+       let cur_arr = Array.from({length: num}, (x,i) => 
+            new THREE.Vector3(... cylToCart(Math.pow(mu, i/10) * a, i/10, Math.pow(mu, i/10) * c))
+    );
+
+      let curve = new THREE.CatmullRomCurve3(cur_arr);
+      return curve;
+} 
    
   /**
   * Render!
