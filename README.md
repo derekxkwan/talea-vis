@@ -5,5 +5,5 @@ project with Anne-Sophie Andersen to visualize Gérard Grisey's Talea three-dime
 ## talea_csvread.py
 - convert csv files to json
 
-## talea-3js
-- the main visualizer of talea using three.js
+## docs
+- the main visualizer of talea using three.js (need to figure out github pages relative directories...)

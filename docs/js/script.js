@@ -34,8 +34,8 @@ let mesh = makeSpiral(data1);
 
 //========================================================
 function makeSpiral(curDict) {
-    let curLen = curDict["total_len"];
-    let adjLen = curLen * lenMult;
+    let totLen = curDict["total_len"];
+    let adjLen = totLen * lenMult;
     //let curve = makeConicalSpiral(201,5,cur_len,5);
     let curve = makeConchospiral(1.065,1.0, 1.1, adjLen);
     let geom = new THREE.TubeBufferGeometry(curve, adjLen * qual, rad, radSeg, false);
@@ -49,6 +49,8 @@ function makeSpiral(curDict) {
         geom.addGroup(i, stepSize, idx % colorArray.length);
     };
     */
+    /*
+     * old forwards way
     curDict["data"].forEach((curSec, i) => {
         let curLen = curSec["qtr_len"];
         let curIdx = curSec["qtr_index"];
@@ -72,6 +74,40 @@ function makeSpiral(curDict) {
             runIdx += curLen2;
         });
     });
+    */
+    // need to go backwards!
+    //
+     curDict["data"].forEach((curSec, i) => {
+        let curLen = curSec["qtr_len"];
+        let curIdx = curSec["qtr_index"];
+        let adjIdx = totLen - curIdx;
+        let sprLen = getSpiralLen(curLen);
+        let sprIdx = getSpiralIdx(adjIdx);
+        let curSubdiv = curSec["elt_subdiv"];
+        let curSubdivLen = Math.round(stepSize/curSubdiv);
+        let runIdx = sprIdx;
+        let eltLen = curSec["elts"].length;
+        //console.log("newsec", totLen, curIdx, sprIdx, curSubdivLen);
+        curSec["elts"].forEach((elt, j) => {
+            let curSublen = elt["len"];
+            if(curSublen > 0) {
+                let curLen2 = curSublen * curSubdivLen;
+                let curIdx = runIdx - curLen2;
+                //let curSubidx = elt["subidx"];
+                let curType = elt["type"];
+                let curMat = colorArray[curType]["idx"];
+                //let curDir = elt["dir"];
+                if(j == (eltLen - 1)) {
+                    curIdx = sprIdx - sprLen;
+                    curLen2 = runIdx - curIdx;
+                };
+                //console.log("qtrsec", curIdx, curLen2, curMat);
+                geom.addGroup(curIdx, curLen2, curMat);
+                runIdx = curIdx;
+            };
+        });
+    });
+
     let mesh = new THREE.Mesh(geom, matArray);
     scene.add(mesh);
     return mesh;
