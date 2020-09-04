@@ -1,8 +1,8 @@
 
 //import * as THREE from "../../lib/three.min.js";
 //import {OBJLoader} from "../../lib/OBJLoader.js";
-import * as THREE from "../build/three.module.js";
-import {OrbitControls} from "../lib/OrbitControls.js";
+import * as THREE from "./build/three.module.js";
+import {OrbitControls} from "./lib/OrbitControls.js";
 
 let bg = 0x00263f;
 let qual = 5;
