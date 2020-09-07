@@ -4,10 +4,13 @@
 import * as THREE from "./build/three.module.js";
 import {OrbitControls} from "./lib/OrbitControls.js";
 
-let bg = 0x00263f;
-let qual = 5;
-let radSeg = 10;
-let rad = 15;
+let bg = 0xffffff;
+//let bg = 0x00263f;
+//let bg = 0xffffff;
+let qual = 10;
+let radSeg = 5;
+let cylRadSeg = 16;
+let rad = 10;
 let lenMult = 3;
 const renderer = getRenderer();
 let scene = getScene();
@@ -17,32 +20,62 @@ let wireframeMat = new THREE.LineBasicMaterial( { color: 0xffffff } );
 let controls = initControls(camera);
 //let controls = getControls(camera, renderer);
 
-let colorArray = {"a": {"val": 0xcccccc}, "b": {"val": 0x339acf}, "s": {"val": 0x3322fc}};
 
-let i = 0;
-for(let k in colorArray) {
-    let curColor = colorArray[k]["val"];
-    colorArray[k]["idx"] = i++;
-    colorArray[k]["mat"] = new THREE.MeshLambertMaterial( {color: curColor, opacity: 1, wireframe: false, transparent: false});
+let colorArray = [[0x001DFF, 0x8492FF],
+                [0xFE0218, 0xFD8893, 0xCC0202],
+                [0x00C354, 0x66C38E, 0x017031, 0x447559],
+                [0xFF9500, 0xFFCD86, 0xDD8100, 0xDCB276, 0x995A00],
+                [0x03F1FE, 0xC1FCFF, 0x00B5C0, 0xA4D4D7, 0x00565B, 0xA6A6A6]
+                ];
+
+let matDict = {"a": {"shininess": 150, "opacity": 1, "transparent": false, "colorIdx": 0},
+                "b": {"shininess": 30, "opacity": 0.8, "transparent": true, "colorIdx": 1},
+                "s": {"shininess": 150, "opacity": 0.2, "transparent": true, "colorIdx": 0},
+                "a'": {"shininess": 150, "opacity": 1, "transparent": false, "colorIdx": 2},
+                "b'": {"shininess": 30, "opacity": 0.8, "transparent": true, "colorIdx": 3},
+                "a''": {"shininess": 150, "opacity": 1, "transparent": false, "colorIdx": 4},
+                "t": {"shininess": 150, "opacity": 0.2, "transparent": true, "colorIdx": 1},
+                "b''": {"shininess": 30, "opacity": 0.8, "transparent": true, "colorIdx": 5}
 };
 
-let matArray = Object.keys(colorArray).map((k) => colorArray[k]["mat"]);
-let mesh = makeSpiral(data1); 
+function makeMatArray(clrArr)
+{
+    let retArray = [];
+    let eltDict = {};
+    let curLen = clrArr.length;
+    let i = 0;
+    for(let k in matDict) {
+        let curElt = matDict[k];
+        let colIdx = curElt["colorIdx"];
+        if(colIdx < curLen)
+        {
+            console.log(i);
+            let curMat = new THREE.MeshPhongMaterial( {color: clrArr[colIdx], opacity: curElt["opacity"], transparent: curElt["transparent"], wireframe: false, shininess: curElt["shininess"]});
+            retArray.push(curMat);
+            eltDict[k] = i++;
+        };
+    }; 
+    return [eltDict, retArray];
+}   
+
+let spr1 = makeSpiral(data1, colorArray[0]); 
+//let cyl1 = makeCyl(250);
   render();
 
 
 
 //========================================================
-function makeSpiral(curDict) {
+function makeSpiral(curDict, clrArr) {
     let totLen = curDict["total_len"];
     let adjLen = totLen * lenMult;
     //let curve = makeConicalSpiral(201,5,cur_len,5);
-    let curve = makeConchospiral(1.065,1.0, 1.1, adjLen);
+    let curve = makeConchospiral(1.065,0.5, 1.1, adjLen);
     let geom = new THREE.TubeBufferGeometry(curve, adjLen * qual, rad, radSeg, false);
     geom.clearGroups();
 
     let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
-   
+    let [eltDict, matArray] = makeMatArray(clrArr);
+    console.log(eltDict, matArray); 
     /*
     for(let i = 0; i < (qual*radSeg*adjLen*3); i += stepSize) {
         let idx = Math.floor(i/stepSize);
@@ -95,14 +128,14 @@ function makeSpiral(curDict) {
                 let curIdx = runIdx - curLen2;
                 //let curSubidx = elt["subidx"];
                 let curType = elt["type"];
-                let curMat = colorArray[curType]["idx"];
+                let matIdx = eltDict[curType];
                 //let curDir = elt["dir"];
                 if(j == (eltLen - 1)) {
                     curIdx = sprIdx - sprLen;
                     curLen2 = runIdx - curIdx;
                 };
                 //console.log("qtrsec", curIdx, curLen2, curMat);
-                geom.addGroup(curIdx, curLen2, curMat);
+                geom.addGroup(curIdx, curLen2, matIdx);
                 runIdx = curIdx;
             };
         });
@@ -113,11 +146,23 @@ function makeSpiral(curDict) {
     return mesh;
 }
 
+function makeCyl(rad) {
+    let geom = new THREE.CylinderBufferGeometry(rad, rad, rad*3, cylRadSeg, 1, true, 0,2*Math.PI);
+    let mat =  new THREE.MeshPhongMaterial( {color: 0xff0000, opacity: 0.5, transparent: true, wireframe: false, shininess: 150});
+    let mesh = new THREE.Mesh(geom,mat);
+    mesh.rotation.x += Math.PI*0.5;
+    scene.add(mesh);
+    return mesh;
+    
+}
+
 function getSpiralLen(len) {
+    //return (qual*radSeg*3*lenMult * len);
     return (qual*radSeg*3*lenMult * len);
 }
 
 function getSpiralIdx(idx) {
+    //return (qual * radSeg * 3 * lenMult * idx);
     return (qual * radSeg * 3 * lenMult * idx);
 }   
 
