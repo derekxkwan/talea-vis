@@ -10,10 +10,10 @@ let bg = 0xffffff;
 let qual = 10;
 let radSeg = 5;
 let cylRadSeg = 32;
-let rad = 20;
-let cylRadInner = 1000;
+let rad = 10;
+let cylRadInner = 500;
 let cylRadThick = 10;
-let cylDepth = 3000, cylColor = 0x010101;
+let cylDepth = 1000, cylColor = 0x010101;
 let lenMult = 3;
 const renderer = getRenderer();
 let scene = getScene();
@@ -24,7 +24,6 @@ let controls = initControls(camera);
 //let controls = getControls(camera, renderer);
 
 
-let radArray = [1, 0.8, 0.6, 0.4, 0.2];
 let colorArray = [[0x001DFF, 0x8492FF],
                 [0xFE0218, 0xFD8893, 0xCC0202],
                 [0x00C354, 0x66C38E, 0x017031, 0x447559],
@@ -53,7 +52,7 @@ function makeMatArray(clrArr)
         let colIdx = curElt["colorIdx"];
         if(colIdx < curLen)
         {
-            //console.log(i);
+            console.log(i);
             let curMat = new THREE.MeshPhongMaterial( {color: clrArr[colIdx], opacity: curElt["opacity"], transparent: curElt["transparent"], wireframe: false, shininess: curElt["shininess"]});
             retArray.push(curMat);
             eltDict[k] = i++;
@@ -62,8 +61,8 @@ function makeMatArray(clrArr)
     return [eltDict, retArray];
 }   
 
-let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorArray[i], radArray[i]));
-
+let spr1 = makeSpiral(data1, colorArray[0], 1); 
+let spr2 = makeSpiral(data1, colorArray[1], 0.95); 
 let cyl1 = makeCyl(cylRadInner, cylDepth);
   render();
 
@@ -81,7 +80,7 @@ function makeSpiral(curDict, clrArr, param) {
 
     let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
     let [eltDict, matArray] = makeMatArray(clrArr);
-    //console.log(eltDict, matArray); 
+    console.log(eltDict, matArray); 
     /*
     for(let i = 0; i < (qual*radSeg*adjLen*3); i += stepSize) {
         let idx = Math.floor(i/stepSize);
@@ -169,13 +168,13 @@ function makeCyl(cylRad, depth) {
 }
 
 function getSpiralLen(len) {
+    //return (qual*radSeg*3*lenMult * len);
     return (qual*radSeg*3*lenMult * len);
-    //return (qual*radSeg*3*len);
 }
 
 function getSpiralIdx(idx) {
+    //return (qual * radSeg * 3 * lenMult * idx);
     return (qual * radSeg * 3 * lenMult * idx);
-    //return (qual * radSeg * 3 * idx);
 }   
 
 function initControls(camera) {
