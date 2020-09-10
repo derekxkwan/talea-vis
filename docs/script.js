@@ -7,6 +7,7 @@ import {OrbitControls} from "./lib/OrbitControls.js";
 let bg = 0xffffff;
 //let bg = 0x00263f;
 //let bg = 0xffffff;
+let spiralZpos = 2000;
 let qual = 10;
 let radSeg = 5;
 let cylRadSeg = 32;
@@ -148,6 +149,7 @@ function makeSpiral(curDict, clrArr, param) {
     });
 
     let mesh = new THREE.Mesh(geom, matArray);
+    mesh.position.z += spiralZpos;
     scene.add(mesh);
     return mesh;
 }
@@ -160,7 +162,7 @@ function makeCyl(cylRad, depth) {
     cylOuter.holes.push(cylInner);
     let geom = new THREE.ExtrudeBufferGeometry(cylOuter, {depth: depth, curveSegments: cylRadSeg});
 
-    let mat =  new THREE.MeshPhongMaterial( {color: cylColor, opacity: 0.1, reflectivity: 1, transparent: true, wireframe: false, shininess: 300});
+    let mat =  new THREE.MeshPhongMaterial( {color: cylColor, opacity: 0.05, reflectivity: 1, transparent: true, wireframe: false, shininess: 300});
     let mesh = new THREE.Mesh(geom,mat);
     //mesh.rotation.x += Math.PI*0.5;
     scene.add(mesh);
@@ -200,7 +202,7 @@ function getScene() {
     var camera = new THREE.PerspectiveCamera(50, aspectRatio, 0.1, 10000);
     //camera.position.set(0, 1, -10);
       //camera.position.set(0, 0, 50);
-      camera.position.set(0,50,500);
+      camera.position.set(0,50,spiralZpos + 600);
 
     return camera;
   }
