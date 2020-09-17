@@ -4,18 +4,21 @@
 import * as THREE from "./build/three.module.js";
 import {OrbitControls} from "./lib/OrbitControls.js";
 
-let bg = 0xffffff;
+//let bg = 0xfafafa;
 //let bg = 0x00263f;
-//let bg = 0xffffff;
+let part1Len = 389;
+let rotAmt = 0.001 * Math.PI;
+let bg = 0xffffff;
+//let bg = 0x000000;
 let spiralZpos = 2000;
 let qual = 10;
-let radSeg = 5;
-let cylRadSeg = 32;
-let rad = 20;
-let cylRadInner = 1000;
-let cylRadThick = 10;
-let cylDepth = 3000, cylColor = 0x010101;
-let lenMult = 3;
+let radSeg = 3;
+let lenMult = 6;
+let cylRadSeg = 16;
+let rad = 30;
+let cylRadInner = 389 * lenMult;
+let cylRadThick = 100;
+let cylDepth = 4500, cylColor = 0xffea00;
 const renderer = getRenderer();
 let scene = getScene();
 let camera = getCamera();
@@ -24,7 +27,8 @@ let wireframeMat = new THREE.LineBasicMaterial( { color: 0xffffff } );
 let controls = initControls(camera);
 //let controls = getControls(camera, renderer);
 
-
+//add emissive dictionary for dynamics
+let emisArray = {"ppp": 0x898989, "fff": 0x000000};
 let radArray = [1, 0.8, 0.6, 0.4, 0.2];
 let colorArray = [[0x001DFF, 0x8492FF],
                 [0xFE0218, 0xFD8893, 0xCC0202],
@@ -33,14 +37,14 @@ let colorArray = [[0x001DFF, 0x8492FF],
                 [0x03F1FE, 0xC1FCFF, 0x00B5C0, 0xA4D4D7, 0x00565B, 0xA6A6A6]
                 ];
 
-let matDict = {"a": {"shininess": 150, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 0},
-                "b": {"shininess": 30, "reflectivity": 0.1, "opacity": 0.8, "transparent": true, "colorIdx": 1},
-                "s": {"shininess": 150, "reflectivity": 1, "opacity": 0.2, "transparent": true, "colorIdx": 0},
-                "a'": {"shininess": 150, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 2},
-                "b'": {"shininess": 30, "reflectivity": 0.1, "opacity": 0.8, "transparent": true, "colorIdx": 3},
-                "a''": {"shininess": 150, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 4},
-                "t": {"shininess": 150, "reflectivity": 1, "opacity": 0.2, "transparent": true, "colorIdx": 1},
-                "b''": {"shininess": 30, "reflectivity": 0.1, "opacity": 0.8, "transparent": true, "colorIdx": 5}
+let matDict = {"a": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 0},
+                "b": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 1},
+                "s": {"shininess": 100, "reflectivity": 1, "opacity": 0.2, "transparent": true, "colorIdx": -1},
+                "a'": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 2},
+                "b'": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 3},
+                "a''": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 4},
+                "t": {"shininess": 100, "reflectivity": 1, "opacity": 0.2, "transparent": true, "colorIdx": 1},
+                "b''": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 5}
 };
 
 function makeMatArray(clrArr)
@@ -55,7 +59,9 @@ function makeMatArray(clrArr)
         if(colIdx < curLen)
         {
             //console.log(i);
-            let curMat = new THREE.MeshPhongMaterial( {color: clrArr[colIdx], opacity: curElt["opacity"], transparent: curElt["transparent"], wireframe: false, shininess: curElt["shininess"]});
+            let curColor = 0xf0f0f0;
+            if(colIdx >= 0) curColor = clrArr[colIdx];
+            let curMat = new THREE.MeshPhongMaterial( {color: curColor, opacity: curElt["opacity"], transparent: curElt["transparent"], wireframe: false, shininess: curElt["shininess"]});
             retArray.push(curMat);
             eltDict[k] = i++;
         };
@@ -74,13 +80,18 @@ let cyl1 = makeCyl(cylRadInner, cylDepth);
 function makeSpiral(curDict, clrArr, param) {
     let totLen = curDict["total_len"];
     let adjLen = totLen * lenMult;
+    let tubLen = adjLen * qual;
     let curve = makeConicalSpiral(201,param,adjLen,1);
+    let secIdxAdj = part1Len - totLen //because i coded qtr_index against overall part 1 length so I need to adjust
     //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
     //let curve = makeConchospiral(1.065,0.5, 1.3, adjLen);
-    let geom = new THREE.TubeBufferGeometry(curve, adjLen * qual, rad, radSeg, false);
+    let geom = new THREE.TubeBufferGeometry(curve, tubLen, rad, radSeg, false);
+    //geom.index = true;
+    //console.log(geom.index);
     geom.clearGroups();
-
-    let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
+    //let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
+    let stepSize = lenMult*qual*(radSeg*6); // because triangles i guess?
+    //console.log(stepSize,stepSize * totLen);
     let [eltDict, matArray] = makeMatArray(clrArr);
     //console.log(eltDict, matArray); 
     /*
@@ -119,19 +130,20 @@ function makeSpiral(curDict, clrArr, param) {
     //
      curDict["data"].forEach((curSec, i) => {
         let curLen = curSec["qtr_len"];
-        let curIdx = curSec["qtr_index"];
+        let curIdx = curSec["qtr_index"] - secIdxAdj;
         let adjIdx = totLen - curIdx;
-        let sprLen = getSpiralLen(curLen);
-        let sprIdx = getSpiralIdx(adjIdx);
+        let sprLen = getSpiralLen(stepSize,curLen);
+        let sprIdx = getSpiralIdx(stepSize,adjIdx);
         let curSubdiv = curSec["elt_subdiv"];
-        let curSubdivLen = Math.round(stepSize/curSubdiv);
+        //let curSubdivLen = Math.round(stepSize/curSubdiv);
+        let curSubdivLen = stepSize/curSubdiv;
         let runIdx = sprIdx;
         let eltLen = curSec["elts"].length;
         //console.log("newsec", totLen, curIdx, sprIdx, curSubdivLen);
         curSec["elts"].forEach((elt, j) => {
             let curSublen = elt["len"];
             if(curSublen > 0) {
-                let curLen2 = curSublen * curSubdivLen;
+                let curLen2 = Math.round(curSublen * curSubdivLen);
                 let curIdx = runIdx - curLen2;
                 //let curSubidx = elt["subidx"];
                 let curType = elt["type"];
@@ -142,12 +154,16 @@ function makeSpiral(curDict, clrArr, param) {
                     curLen2 = runIdx - curIdx;
                 };
                 //console.log("qtrsec", curIdx, curLen2, curMat);
+                //console.log(curIdx, curLen2);
                 geom.addGroup(curIdx, curLen2, matIdx);
+                //geom.addGroup(curIdx, curLen2, 0);
                 runIdx = curIdx;
             };
         });
     });
-
+    //console.log(geom.vertices);
+    //console.log(geom.parameters);
+    //tubularsegments = totlen * lenmult * radial segments * radius
     let mesh = new THREE.Mesh(geom, matArray);
     mesh.position.z += spiralZpos;
     scene.add(mesh);
@@ -155,28 +171,41 @@ function makeSpiral(curDict, clrArr, param) {
 }
 
 function makeCyl(cylRad, depth) {
+
+    //part 1 edge yellow
+    // part 2 edge purple
+    // side transparent or fade
     let cylOuter = new THREE.Shape();
     cylOuter.absarc(0,0, cylRad + cylRadThick, 0, Math.PI * 2, false); //last arg: clockwise
     let cylInner = new THREE.Path();
     cylInner.absarc(0,0, cylRad, 0, Math.PI * 2, true);
     cylOuter.holes.push(cylInner);
     let geom = new THREE.ExtrudeBufferGeometry(cylOuter, {depth: depth, curveSegments: cylRadSeg});
-
-    let mat =  new THREE.MeshPhongMaterial( {color: cylColor, opacity: 0.05, reflectivity: 1, transparent: true, wireframe: false, shininess: 300});
-    let mesh = new THREE.Mesh(geom,mat);
+    console.log(geom);
+    //geom.clearGroups();
+    let mat =  new THREE.MeshPhongMaterial( {color: cylColor, opacity: 1, reflectivity: 1, transparent: true, wireframe: false, shininess: 300});
+    let mat2 =  new THREE.MeshPhongMaterial( {color: 0xfafafa, opacity: 0.1, reflectivity: 1, transparent: true, wireframe: false, shininess: 300});
+    let mat3 =  new THREE.MeshPhongMaterial( {color: 0x00ff00, opacity: 1, reflectivity: 1, transparent: true, wireframe: false, shininess: 300});
+    //geom.addGroup(0, 198, 0);
+    //geom.addGroup(198, 396, 2);
+    //geom.addGroup(396, 2772, 1);
+    let mesh = new THREE.Mesh(geom,[mat,mat2]);
+    console.log(geom.groups);
     //mesh.rotation.x += Math.PI*0.5;
     scene.add(mesh);
     return mesh;
     
 }
 
-function getSpiralLen(len) {
-    return (qual*radSeg*3*lenMult * len);
+function getSpiralLen(stepSize,len) {
+    //return (qual*radSeg*3*lenMult * len);
+    return (stepSize*len);
     //return (qual*radSeg*3*len);
 }
 
-function getSpiralIdx(idx) {
-    return (qual * radSeg * 3 * lenMult * idx);
+function getSpiralIdx(stepSize,idx) {
+    //return (qual * radSeg * 3 * lenMult * idx);
+    return (stepSize * idx);
     //return (qual * radSeg * 3 * idx);
 }   
 
@@ -208,11 +237,11 @@ function getScene() {
   }
 
   function getLight(scene) {
-    var light = new THREE.PointLight(0xffffff, 0.5, 0, 2);
-    //light.position.set(1, 1,1);
+    var light = new THREE.PointLight(0xfafafa, 10, 0);
+    light.position.set(0, 0,spiralZpos + 100);
     scene.add(light);
 
-    var ambientLight = new THREE.AmbientLight(0xffffff);
+    var ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
     return light;
   }
@@ -243,6 +272,7 @@ function getScene() {
     );
 
       let curve = new THREE.CatmullRomCurve3(cur_arr);
+      //console.log(curve.points.length/lenMult);
       return curve;
       } 
 
@@ -260,11 +290,21 @@ function makeConchospiral(mu, a, c, num) {
   * Render!
   **/
 
-  function render() {
+function animate()
+{
+    if(spr.length >= 5) {
+        for(let i in spr) {
+            //console.log(s);
+            spr[i].rotation.z += rotAmt;
+        };
+    };
+}
+function render() {
+    animate();
     requestAnimationFrame(render);
     controls.update();
     renderer.render(scene, camera);
-  };
+};
 
 //--------------------------------------------------------
 
