@@ -4,17 +4,17 @@
 import * as THREE from "./build/three.module.js";
 import {OrbitControls} from "./lib/OrbitControls.js";
 
-//let bg = 0xfafafa;
+let bg = 0xf9f9f9;
 //let bg = 0x00263f;
 let part1Len = 389;
 let rotAmt = 0.001 * Math.PI;
-let bg = 0xffffff;
+//let bg = 0xffffff;
 //let bg = 0x000000;
 let spiralZpos = 2000;
 let qual = 10;
 let radSeg = 3;
 let lenMult = 6;
-let cylRadSeg = 16;
+let cylRadSeg = 32;
 let rad = 30;
 let cylRadInner = 389 * lenMult;
 let cylRadThick = 100;
@@ -228,20 +228,24 @@ function getScene() {
 
   function getCamera() {
     var aspectRatio = window.innerWidth / window.innerHeight;
-    var camera = new THREE.PerspectiveCamera(50, aspectRatio, 0.1, 10000);
+    var camera = new THREE.PerspectiveCamera(50, aspectRatio, 0.1, 90000);
     //camera.position.set(0, 1, -10);
       //camera.position.set(0, 0, 50);
-      camera.position.set(0,50,spiralZpos + 600);
+      camera.position.set(0,50,spiralZpos + (1750*lenMult));
 
     return camera;
   }
 
   function getLight(scene) {
-    var light = new THREE.PointLight(0xfafafa, 10, 0);
-    light.position.set(0, 0,spiralZpos + 100);
+    let light = new THREE.PointLight(0xf0f0f0, 1, 0, 1.5);
+    light.position.set(0, 0,spiralZpos + (1000*lenMult));
     scene.add(light);
+    
+    let light2 = new THREE.PointLight(0xf0f0f0, 1, 0, 1.5);
+    light2.position.set(0, 0,-1*(spiralZpos + (1000*lenMult)));
+    scene.add(light2);
 
-    var ambientLight = new THREE.AmbientLight(0x404040);
+    let ambientLight = new THREE.AmbientLight(0x101010);
     scene.add(ambientLight);
     return light;
   }
