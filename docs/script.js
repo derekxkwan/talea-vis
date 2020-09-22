@@ -4,6 +4,7 @@
 import * as THREE from "./build/three.module.js";
 import {OrbitControls} from "./lib/OrbitControls.js";
 
+let base_bpm = 80;
 let bg = 0xf9f9f9;
 //let bg = 0x00263f;
 let part1Len = 389;
@@ -36,6 +37,19 @@ let colorArray = [[0x001DFF, 0x8492FF],
                 [0xFF9500, 0xFFCD86, 0xDD8100, 0xDCB276, 0x995A00],
                 [0x03F1FE, 0xC1FCFF, 0x00B5C0, 0xA4D4D7, 0x00565B, 0xA6A6A6]
                 ];
+
+let colorArray2 =   [[0xfc03e8],
+                     [0xfc4e03],
+                     [0xbafc03],     
+                     [0x03fcad],
+                     [0x03bafc]
+                    ];
+
+let part2clrMap = { "bf": colorArray[0], "af": colorArray[1], "fs": colorArray[2],
+                    "e": colorArray[3], "d": colorArray[4],
+                    "a": colorArray2[0]. "g": colorArray2[1]. "f": colorArray2[2],
+                    "ef": colorArray2[3], "df": colorArray2[4]
+                    };
 
 let matDict = {"a": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 0},
                 "b": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 1},
@@ -176,6 +190,78 @@ function makeSpiral(curDict, clrArr, param) {
     return mesh;
 }
 
+function makeSpiral2() {
+    parsePart2Data();
+    let cur = data2["data"]
+    let totLen = curDict["total_len"];
+    let adjLen = totLen * lenMult;
+    let tubLen = adjLen * qual;
+    let curve = makeConicalSpiral(201,param,adjLen,1);
+    let secIdxAdj = part1Len - totLen //because i coded qtr_index against overall part 1 length so I need to adjust
+    //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
+    //let curve = makeConchospiral(1.065,0.5, 1.3, adjLen);
+    let geom = new THREE.TubeBufferGeometry(curve, tubLen, rad, radSeg, false);
+    //geom.index = true;
+    //console.log(geom.index);
+    geom.clearGroups();
+    //let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
+    let stepSize = lenMult*qual*(radSeg*6); // because triangles i guess?
+    //console.log(stepSize,stepSize * totLen);
+    let eltDict = [];
+    let matArray = [];
+    for(let i =0; i < cur.length; i++) {
+        let curMatOffset = matArray.length;
+        let clrArr = part2clrMap(cur["fund"]);
+        let [curEltDict, curMatArray] = makeMatArray(clrArr);
+        let matIdx = curEltDict[cur["elt_type"]] + curMatOffset;
+        matArray.push(curMatArray);
+
+    };
+    //console.log(eltDict, matArray); 
+    /*
+    for(let i = 0; i < (qual*radSeg*adjLen*3); i += stepSize) {
+        let idx = Math.floor(i/stepSize);
+        geom.addGroup(i, stepSize, idx % colorArray.length);
+    };
+    */
+    /*
+     * old forwards way
+    curDict["data"].forEach((curSec, i) => {
+        let curLen = curSec["qtr_len"];
+        let curIdx = curSec["qtr_index"];
+        let sprLen = getSpiralLen(curLen);
+        let sprIdx = getSpiralIdx(curIdx);
+        let curSubdiv = curSec["elt_subdiv"];
+        let curSubdivLen = Math.round(stepSize/curSubdiv);
+        let runIdx = sprIdx;
+        let eltLen = curSec["elts"].length;
+        //console.log(curIdx, curSubdivLen);
+        curSec["elts"].forEach((elt, j) => {
+            let curSublen = elt["len"];
+            let curLen2 = curSublen * curSubdivLen;
+            //let curSubidx = elt["subidx"];
+            let curType = elt["type"];
+            let curMat = colorArray[curType]["idx"];
+            //let curDir = elt["dir"];
+            if(j == (eltLen - 1)) curLen2 = (sprIdx + sprLen) - runIdx;
+            console.log(curMat, curLen2);
+            geom.addGroup(runIdx, curLen2, curMat);
+            runIdx += curLen2;
+        });
+    });
+    */
+    
+    //console.log(geom.vertices);
+    //console.log(geom.parameters);
+    //tubularsegments = totlen * lenmult * radial segments * radius
+    let mesh = new THREE.Mesh(geom, matArray);
+    mesh.position.z += spiralZpos;
+    scene.add(mesh);
+    return mesh;
+}
+
+
+
 function makeCyl(cylRad, depth) {
 
     //part 1 edge yellow
@@ -295,7 +381,19 @@ function makeConchospiral(mu, a, c, num) {
       let curve = new THREE.CatmullRomCurve3(cur_arr);
       return curve;
 } 
-   
+
+function parsePart2Data() {
+    let cur = data2["data"];
+    for(let i = 0; i < cur.length; i++) {
+        let cur_bpm = cur["bpm"];
+        let scaled_bpm = cur_bpm/base_bpm;
+        let cur_dur = cur["qtr_dur"];
+        let scaled_dur = (1/scaled_bpm)*cur_dur;
+        data2["data"][i]["scaled_bpm"] = scaled_bpm;
+        data2["data"][i]["scaled_dur"] = scaled_dur;
+    };
+}
+
   /**
   * Render!
   **/
