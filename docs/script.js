@@ -15,7 +15,7 @@ let qual = 10;
 let radSeg = 3;
 let lenMult = 6;
 let cylRadSeg = 32;
-let rad = 30;
+let rad = 15;
 let cylRadInner = 389 * lenMult;
 let cylRadThick = 100;
 let cylDepth = 4500, cylColor = 0xffea00;
@@ -43,7 +43,7 @@ let matDict = {"a": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transpa
                 "a'": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 2},
                 "b'": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 3},
                 "a''": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 4},
-                "t": {"shininess": 100, "reflectivity": 1, "opacity": 0.2, "transparent": true, "colorIdx": 1},
+                "t": {"shininess": 20, "reflectivity": 0.25, "opacity": 0.65, "transparent": true, "colorIdx": -2},
                 "b''": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 5}
 };
 
@@ -60,7 +60,12 @@ function makeMatArray(clrArr)
         {
             //console.log(i);
             let curColor = 0xf0f0f0;
-            if(colIdx >= 0) curColor = clrArr[colIdx];
+            if(colIdx >= 0) {
+                curColor = clrArr[colIdx];
+            }
+            else if(colIdx == -2) {
+                curColor = 0x6e6f70;
+            };
             let curMat = new THREE.MeshPhongMaterial( {color: curColor, opacity: curElt["opacity"], transparent: curElt["transparent"], wireframe: false, shininess: curElt["shininess"]});
             retArray.push(curMat);
             eltDict[k] = i++;
@@ -71,6 +76,7 @@ function makeMatArray(clrArr)
 
 let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorArray[i], radArray[i]));
 
+//let spr = makeSpiral(data[0], colorArray[0], radArray[0]);
 let cyl1 = makeCyl(cylRadInner, cylDepth);
   render();
 
