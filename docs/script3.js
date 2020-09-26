@@ -29,11 +29,7 @@ let controls = initControls(camera);
 //let controls = getControls(camera, renderer);
 
 //add emissive dictionary for dynamics
-let emisDict = {"nient": 0xbababa, "pppp": 0xa6a6a6, "ppp": 0x8f8f8f,
-                "pp": 0x7d7d7d, "p": 0x707070, "mp": 0x5e5e5e,
-                "mf": 0x525252,"f": 0x404040, "ff": 0x262626,
-                "fff": 0x000000};
-
+let emisArray = {"ppp": 0x898989, "fff": 0x000000};
 let radArray = [1, 0.8, 0.6, 0.4, 0.2];
 let colorArray = [[0x001DFF, 0x8492FF],
                 [0xFE0218, 0xFD8893, 0xCC0202],
@@ -55,7 +51,6 @@ let part2clrMap = { "bf": colorArray[0], "af": colorArray[1], "fs": colorArray[2
                     "ef": colorArray2[3], "df": colorArray2[4]
                     };
 
-
 let matDict = {"a": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": false, "colorIdx": 0},
                 "b": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 1},
                 "s": {"shininess": 100, "reflectivity": 1, "opacity": 0.2, "transparent": true, "colorIdx": -1},
@@ -66,26 +61,6 @@ let matDict = {"a": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transpa
                 "b''": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 5}
 };
 
-function makeMat(eltType, clrArr, curDyn) {
-    let curEmis = 0x000000;
-    let curElt = matDict[eltType];
-    let colIdx = curElt["colorIdx"];
-    let curColor = 0xf0f0f0;
-    if(colIdx >= 0) {
-        curColor = clrArr[colIdx];
-    }
-    else if(colIdx == -2) {
-        curColor = 0x6e6f70;
-    };
-    if(Object.keys(emisDict).includes(curDyn)) {
-        curEmis = emisDict[curDyn];
-    };
-    curElt["emissive"] = curEmis;
-    let curMat = new THREE.MeshPhongMaterial( {color: curColor, emissive: curEmis, opacity: curElt["opacity"], transparent: curElt["transparent"], wireframe: false, shininess: curElt["shininess"]});
-
-    return curMat;
-}
-
 function makeMatArray(clrArr)
 {
     let retArray = [];
@@ -93,12 +68,22 @@ function makeMatArray(clrArr)
     let curLen = clrArr.length;
     let i = 0;
     for(let k in matDict) {
+        let curElt = matDict[k];
+        let colIdx = curElt["colorIdx"];
+        if(colIdx < curLen)
+        {
             //console.log(i);
-           
-            let curMat = makeMat(k, clrArr, "none"); 
+            let curColor = 0xf0f0f0;
+            if(colIdx >= 0) {
+                curColor = clrArr[colIdx];
+            }
+            else if(colIdx == -2) {
+                curColor = 0x6e6f70;
+            };
+            let curMat = new THREE.MeshPhongMaterial( {color: curColor, opacity: curElt["opacity"], transparent: curElt["transparent"], wireframe: false, shininess: curElt["shininess"]});
             retArray.push(curMat);
             eltDict[k] = i++;
-        
+        };
     }; 
     return [eltDict, retArray];
 }   
@@ -130,6 +115,7 @@ function makeSpiral(curDict, clrArr, param) {
     //let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
     let stepSize = lenMult*qual*(radSeg*6); // because triangles i guess?
     //console.log(stepSize,stepSize * totLen);
+    let [eltDict, matArray] = makeMatArray(clrArr);
     //console.log(eltDict, matArray); 
     /*
     for(let i = 0; i < (qual*radSeg*adjLen*3); i += stepSize) {
@@ -165,8 +151,6 @@ function makeSpiral(curDict, clrArr, param) {
     */
     // need to go backwards!
     //
-    let matArray = [];
-    let curMatIdx = 0;
      curDict["data"].forEach((curSec, i) => {
         let curLen = curSec["qtr_len"];
         let curIdx = curSec["qtr_index"] - secIdxAdj;
@@ -181,14 +165,12 @@ function makeSpiral(curDict, clrArr, param) {
         //console.log("newsec", totLen, curIdx, sprIdx, curSubdivLen);
         curSec["elts"].forEach((elt, j) => {
             let curSublen = elt["len"];
-            let curType = elt["type"];
-            if(curSublen > 0 && curType != "none") {
+            if(curSublen > 0) {
                 let curLen2 = Math.round(curSublen * curSubdivLen);
                 let curIdx = runIdx - curLen2;
                 //let curSubidx = elt["subidx"];
-                let curDyn = elt["dyn"];
-                let curMat = makeMat(curType, clrArr, curDyn); 
-                //let matIdx = eltDict[curType];
+                let curType = elt["type"];
+                let matIdx = eltDict[curType];
                 //let curDir = elt["dir"];
                 if(j == (eltLen - 1)) {
                     curIdx = sprIdx - sprLen;
@@ -196,9 +178,7 @@ function makeSpiral(curDict, clrArr, param) {
                 };
                 //console.log("qtrsec", curIdx, curLen2, curMat);
                 //console.log(curIdx, curLen2);
-                geom.addGroup(curIdx, curLen2, curMatIdx);
-                matArray.push(curMat);
-                curMatIdx += 1;
+                geom.addGroup(curIdx, curLen2, matIdx);
                 //geom.addGroup(curIdx, curLen2, 0);
                 runIdx = curIdx;
             };
@@ -240,7 +220,7 @@ function makeSpiral2(curRadius) {
         //console.log(curFund);
         if(curFund != pastFund) {
             let clrArr = part2clrMap[curFund];
-            //console.log(clrArr);
+            console.log(clrArr);
             [curEltDict, curMatArray] = makeMatArray(clrArr);
             curMatOffset += matArray.length;
             matArray = matArray.concat(curMatArray);
@@ -265,7 +245,7 @@ function makeSpiral2(curRadius) {
     //console.log(geom.vertices);
     //console.log(geom.parameters);
     //tubularsegments = totlen * lenmult * radial segments * radius
-    //console.log(matArray);
+    console.log(matArray);
     let mesh = new THREE.Mesh(geom, matArray);
     mesh.rotation.x += Math.PI;
     mesh.position.z += spiralZpos;
