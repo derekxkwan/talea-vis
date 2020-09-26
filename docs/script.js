@@ -33,21 +33,21 @@ let emisArray = {"ppp": 0x898989, "fff": 0x000000};
 let radArray = [1, 0.8, 0.6, 0.4, 0.2];
 let colorArray = [[0x001DFF, 0x8492FF],
                 [0xFE0218, 0xFD8893, 0xCC0202],
-                [0x00C354, 0x66C38E, 0x017031, 0x447559],
-                [0xFF9500, 0xFFCD86, 0xDD8100, 0xDCB276, 0x995A00],
+                [0x00c354, 0x66c38e, 0x017031, 0x447559],
+                [0xff9500, 0xffcd86, 0xdd8100, 0xdcb276, 0x995a00],
                 [0x03F1FE, 0xC1FCFF, 0x00B5C0, 0xA4D4D7, 0x00565B, 0xA6A6A6]
                 ];
 
-let colorArray2 =   [[0xfc03e8],
-                     [0xfc4e03],
-                     [0xbafc03],     
-                     [0x03fcad],
-                     [0x03bafc]
+let colorArray2 =   [[0xfc03e8, 0xfc036b],
+                     [0xfc4e03, 0xf77c48, 0xb53802],
+                     [0xbafc03, 0xddfc86, 0x5a7a00, 0x7a855b],     
+                     [0x03fcad, 0x9dfcde, 0x00ba7f, 0x6bc9ab, 0x588275],
+                     [0x03bafc, 0xb8ecff, 0x0280ad, 0x97becc, 0x01455e, 0x9b9d9e]
                     ];
 
 let part2clrMap = { "bf": colorArray[0], "af": colorArray[1], "fs": colorArray[2],
                     "e": colorArray[3], "d": colorArray[4],
-                    "a": colorArray2[0]. "g": colorArray2[1]. "f": colorArray2[2],
+                    "a": colorArray2[0], "g": colorArray2[1], "f": colorArray2[2],
                     "ef": colorArray2[3], "df": colorArray2[4]
                     };
 
@@ -90,6 +90,9 @@ function makeMatArray(clrArr)
 
 let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorArray[i], radArray[i]));
 
+//parsePart2Data(1);
+//console.log(data2["tot_dur"]*lenMult);
+let spr2 = makeSpiral2(1.0);
 //let spr = makeSpiral(data[0], colorArray[0], radArray[0]);
 let cyl1 = makeCyl(cylRadInner, cylDepth);
   render();
@@ -190,14 +193,14 @@ function makeSpiral(curDict, clrArr, param) {
     return mesh;
 }
 
-function makeSpiral2() {
+function makeSpiral2(curRadius) {
     parsePart2Data();
-    let cur = data2["data"]
-    let totLen = curDict["total_len"];
+    let cur = data2["data"];
+    let totLen = data2["tot_dur"];
     let adjLen = totLen * lenMult;
-    let tubLen = adjLen * qual;
-    let curve = makeConicalSpiral(201,param,adjLen,1);
-    let secIdxAdj = part1Len - totLen //because i coded qtr_index against overall part 1 length so I need to adjust
+    console.log(totLen);
+    let tubLen = Math.round(adjLen * qual);
+    let curve = makeConicalSpiral(201,curRadius, Math.round(adjLen),1);
     //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
     //let curve = makeConchospiral(1.065,0.5, 1.3, adjLen);
     let geom = new THREE.TubeBufferGeometry(curve, tubLen, rad, radSeg, false);
@@ -205,56 +208,46 @@ function makeSpiral2() {
     //console.log(geom.index);
     geom.clearGroups();
     //let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
-    let stepSize = lenMult*qual*(radSeg*6); // because triangles i guess?
+    let stepSize = Math.round(lenMult*qual*(radSeg*6)); // because triangles i guess?
     //console.log(stepSize,stepSize * totLen);
-    let eltDict = [];
     let matArray = [];
+    let curIdx = 0;
+    let pastFund = "";
+    let curMatArray, curEltDict;
+    let curMatOffset = 0;
     for(let i =0; i < cur.length; i++) {
-        let curMatOffset = matArray.length;
-        let clrArr = part2clrMap(cur["fund"]);
-        let [curEltDict, curMatArray] = makeMatArray(clrArr);
-        let matIdx = curEltDict[cur["elt_type"]] + curMatOffset;
-        matArray.push(curMatArray);
-
+        let curFund = cur[i]["fund"];
+        //console.log(curFund);
+        if(curFund != pastFund) {
+            let clrArr = part2clrMap[curFund];
+            console.log(clrArr);
+            [curEltDict, curMatArray] = makeMatArray(clrArr);
+            curMatOffset += matArray.length;
+            matArray = matArray.concat(curMatArray);
+        };
+        pastFund = curFund;
+        let matIdx = curEltDict[cur[i]["elt_type"]] + curMatOffset;
+        let curDur = cur[i]["scaled_dur"];
+        let curLen = Math.round(getSpiralLen(stepSize,curDur));
+        //let curSprIdx = Math.round(getSpiralIdx(stepSize,curIdx));
+        
+        if(i == (cur.length - 1)) {
+            //curSprIdx = getSpiralLen(stepSize,totLen) - curLen;
+            curIdx = getSpiralLen(stepSize,totLen) - curLen;
+        };
+        
+        //console.log(curSprIdx, curLen, matIdx, matArray.length);
+        //geom.addGroup(curSprIdx, curLen, matIdx);
+        geom.addGroup(curIdx, curLen, matIdx);
+        //curIdx += curDur;
+        curIdx += curLen;
     };
-    //console.log(eltDict, matArray); 
-    /*
-    for(let i = 0; i < (qual*radSeg*adjLen*3); i += stepSize) {
-        let idx = Math.floor(i/stepSize);
-        geom.addGroup(i, stepSize, idx % colorArray.length);
-    };
-    */
-    /*
-     * old forwards way
-    curDict["data"].forEach((curSec, i) => {
-        let curLen = curSec["qtr_len"];
-        let curIdx = curSec["qtr_index"];
-        let sprLen = getSpiralLen(curLen);
-        let sprIdx = getSpiralIdx(curIdx);
-        let curSubdiv = curSec["elt_subdiv"];
-        let curSubdivLen = Math.round(stepSize/curSubdiv);
-        let runIdx = sprIdx;
-        let eltLen = curSec["elts"].length;
-        //console.log(curIdx, curSubdivLen);
-        curSec["elts"].forEach((elt, j) => {
-            let curSublen = elt["len"];
-            let curLen2 = curSublen * curSubdivLen;
-            //let curSubidx = elt["subidx"];
-            let curType = elt["type"];
-            let curMat = colorArray[curType]["idx"];
-            //let curDir = elt["dir"];
-            if(j == (eltLen - 1)) curLen2 = (sprIdx + sprLen) - runIdx;
-            console.log(curMat, curLen2);
-            geom.addGroup(runIdx, curLen2, curMat);
-            runIdx += curLen2;
-        });
-    });
-    */
-    
     //console.log(geom.vertices);
     //console.log(geom.parameters);
     //tubularsegments = totlen * lenmult * radial segments * radius
+    console.log(matArray);
     let mesh = new THREE.Mesh(geom, matArray);
+    mesh.rotation.x += Math.PI;
     mesh.position.z += spiralZpos;
     scene.add(mesh);
     return mesh;
@@ -384,14 +377,17 @@ function makeConchospiral(mu, a, c, num) {
 
 function parsePart2Data() {
     let cur = data2["data"];
+    let cml_dur = 0;
     for(let i = 0; i < cur.length; i++) {
-        let cur_bpm = cur["bpm"];
+        let cur_bpm = cur[i]["bpm"];
         let scaled_bpm = cur_bpm/base_bpm;
-        let cur_dur = cur["qtr_dur"];
+        let cur_dur = cur[i]["qtr_dur"];
         let scaled_dur = (1/scaled_bpm)*cur_dur;
         data2["data"][i]["scaled_bpm"] = scaled_bpm;
         data2["data"][i]["scaled_dur"] = scaled_dur;
+        cml_dur += scaled_dur;
     };
+    data2["tot_dur"] = cml_dur;
 }
 
   /**
@@ -406,6 +402,7 @@ function animate()
             spr[i].rotation.z += rotAmt;
         };
     };
+    if(spr2 != null) spr2.rotation.z += rotAmt;
 }
 function render() {
     animate();
