@@ -18,7 +18,7 @@ let lenMult = 6;
 let cylRadSeg = 32;
 let rad = 15;
 let cylRadInner = 389 * lenMult;
-let cylRadThick = 100;
+let cylRadThick = 1000;
 let cylDepth = 4500, cylColor = 0xffea00;
 const renderer = getRenderer();
 let scene = getScene();
@@ -427,7 +427,7 @@ function animate()
             spr[i].rotation.z += rotAmt;
         };
     };
-    if(spr2 != null) spr2.rotation.z += rotAmt;
+    if(spr2 != null) spr2.rotation.z -= rotAmt;
 }
 function render() {
     animate();

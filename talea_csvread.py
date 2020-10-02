@@ -9,7 +9,7 @@ basename, ext = os.path.splitext(curfile)
 outfile = os.path.join(curpath, basename + ".js")
 
 base_keys = ['qtr_len', 'qtr_index', 'elt_subdiv']
-elt_keys = ['len', 'subidx', 'type', 'dir', 'dyn']
+elt_keys = ['len', 'subidx', 'type','dyn', 'dir', 'plo', 'phi']
 cur_arr = []
 
 def convert_ints(cur_arr):
