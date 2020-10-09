@@ -238,24 +238,21 @@ function makeSpiral2(curRadius) {
     let matArray = [];
     let curIdx = 0;
     let pastFund = "";
-    let curMatArray, curEltDict;
-    let curMatOffset = 0;
+    let clrArr = [];
     for(let i =0; i < cur.length; i++) {
         let curFund = cur[i]["fund"];
+        let curEltType = cur[i]["elt_type"];
+        let curDyn = cur[i]["dyn"];
         //console.log(curFund);
         if(curFund != pastFund) {
-            let clrArr = part2clrMap[curFund];
-            //console.log(clrArr);
-            [curEltDict, curMatArray] = makeMatArray(clrArr);
-            curMatOffset += matArray.length;
-            matArray = matArray.concat(curMatArray);
+            clrArr = part2clrMap[curFund];
         };
         pastFund = curFund;
-        let matIdx = curEltDict[cur[i]["elt_type"]] + curMatOffset;
+        let curMat = makeMat(curEltType, clrArr, curDyn);
         let curDur = Math.round(cur[i]["scaled_dur"]);
         let curLen = getSpiralLen(stepSize,curDur);
         //let curSprIdx = Math.round(getSpiralIdx(stepSize,curIdx));
-        
+        matArray.push(curMat);
         if(i == (cur.length - 1)) {
             //curSprIdx = getSpiralLen(stepSize,totLen) - curLen;
             curIdx = getSpiralLen(stepSize,totLen) - curLen;
@@ -263,7 +260,7 @@ function makeSpiral2(curRadius) {
         
         //console.log(curSprIdx, curLen, matIdx, matArray.length);
         //geom.addGroup(curSprIdx, curLen, matIdx);
-        geom.addGroup(curIdx, curLen, matIdx);
+        geom.addGroup(curIdx, curLen,i);
         //curIdx += curDur;
         curIdx += curLen;
     };
