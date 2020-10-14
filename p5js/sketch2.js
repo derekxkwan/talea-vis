@@ -1,6 +1,7 @@
 let cw = 1200
 let ch = 1200;
-let clr1 = [252, 186,3];
+//let clr1 = [252, 186,3];
+let clr1 = [255, 250,102];
 let clr2 = [252,3,127];
 
 function polarToCart(radius, theta) {
