@@ -7,19 +7,19 @@ import {OrbitControls} from "./lib/OrbitControls.js";
 let base_bpm = 80;
 let bg = 0xf9f9f9;
 //let bg = 0x00263f;
-let part1Len = 389;
+let part1Len = data[0]["total_len"];
 let rotAmt = 0.001 * Math.PI;
 //let bg = 0xffffff;
 //let bg = 0x000000;
-let spiralZpos = 2000;
 let qual = 10;
-let radSeg = 3;
+let radSeg = 4;
 let lenMult = 6;
+let spiralZpos = 2*part1Len*lenMult;
 let cylRadSeg = 32;
 let rad = 15;
-let cylRadInner = 389 * lenMult;
+let cylRadInner = part1Len * 2 * lenMult;
 let cylRadThick = 1000;
-let cylDepth = 4500, cylColor = 0xffea00;
+let cylDepth = part1Len * lenMult * 3, cylColor = 0xffea00;
 const renderer = getRenderer();
 let scene = getScene();
 let camera = getCamera();
@@ -222,10 +222,10 @@ function makeSpiral2(curRadius) {
     parsePart2Data();
     let cur = data2["data"];
     let totLen = data2["tot_dur"];
-    let adjLen = totLen * lenMult;
+    let adjLen = totLen;
     console.log(totLen);
-    let tubLen = Math.round(adjLen * qual);
-    let curve = makeConicalSpiral(201,curRadius, Math.round(adjLen),1);
+    let tubLen = adjLen * qual;
+    let curve = makeConicalSpiral(201,curRadius, adjLen,1);
     //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
     //let curve = makeConchospiral(1.065,0.5, 1.3, adjLen);
     let geom = new THREE.TubeBufferGeometry(curve, tubLen, rad, radSeg, false);
@@ -233,7 +233,7 @@ function makeSpiral2(curRadius) {
     //console.log(geom.index);
     geom.clearGroups();
     //let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
-    let stepSize = Math.round(lenMult*qual*(radSeg*6)); // because triangles i guess?
+    let stepSize = qual*(radSeg*6); // because triangles i guess?
     //console.log(stepSize,stepSize * totLen);
     let matArray = [];
     let curIdx = 0;
@@ -249,13 +249,13 @@ function makeSpiral2(curRadius) {
         };
         pastFund = curFund;
         let curMat = makeMat(curEltType, clrArr, curDyn);
-        let curDur = Math.round(cur[i]["scaled_dur"]);
-        let curLen = getSpiralLen(stepSize,curDur);
+        let curDur = cur[i]["scaled_dur"];
+        let curLen = Math.round(getSpiralLen(stepSize,curDur));
         //let curSprIdx = Math.round(getSpiralIdx(stepSize,curIdx));
         matArray.push(curMat);
         if(i == (cur.length - 1)) {
             //curSprIdx = getSpiralLen(stepSize,totLen) - curLen;
-            curIdx = getSpiralLen(stepSize,totLen) - curLen;
+            curIdx = Math.round(getSpiralLen(stepSize,totLen)) - curLen;
         };
         
         //console.log(curSprIdx, curLen, matIdx, matArray.length);
@@ -404,9 +404,10 @@ function parsePart2Data() {
         let cur_bpm = cur[i]["bpm"];
         let scaled_bpm = cur_bpm/base_bpm;
         let cur_dur = cur[i]["qtr_dur"];
-        let scaled_dur = (1/scaled_bpm)*cur_dur;
+        let scaled_dur = Math.round((1.0/scaled_bpm)*cur_dur*lenMult);
         data2["data"][i]["scaled_bpm"] = scaled_bpm;
         data2["data"][i]["scaled_dur"] = scaled_dur;
+        console.log(scaled_dur, cml_dur);
         cml_dur += scaled_dur;
     };
     data2["tot_dur"] = cml_dur;

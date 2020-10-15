@@ -1,8 +1,11 @@
 let cw = 1200
 let ch = 1200;
-let part1Len = 389;
+let transpAlpha = 100.0;
+let part1Len = data[0]["total_len"];
 let div = 100.0;
 let n = -0.2;
+let normSW = 3;
+let transpSW = 1;
 let radMult = 300;
 let lenMult = 0.025;
 let rangeScl = 0.0075;
@@ -10,6 +13,15 @@ let rangeScl = 0.0075;
 let clr1 = [255, 250,102];
 let colorArray = ["#001DFF", "#FE0218", "#00c354", "#ff9500", "#03F1FE"];
 let cPitch = stringToMidi("ef4");
+
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
 
 function polarToCart(radius, theta) {
     return [radius * Math.cos(theta), radius * Math.sin(theta)];
@@ -69,7 +81,6 @@ function makeSpiral(_n, _div, _lenmult, _radmult, curData, curColor) {
     let dataPts = curData["data"]; 
     let curOffset = (part1Len - curLen)*_lenmult;
     let totalLen = part1Len * _lenmult;
-    stroke(curColor);
     let prev = [0,0];
     let dataIdx = -1;
     let eltLen = 0;
@@ -82,6 +93,8 @@ function makeSpiral(_n, _div, _lenmult, _radmult, curData, curColor) {
     let eltRunIdx = 0;
     let lastDisp = [0,0,0], eltDisp = [0,0,0];
     let drawRange = false;
+    let curRgb = hexToRgb(curColor);
+    console.log(curRgb);
     for(let i=0; i < totalLen; i += (1.0/div)) {
         let letDraw = i >= curOffset;
         if(letDraw && i >= (dataLen + curDataLoc) && dataIdx < dataPts.length - 1){
@@ -111,9 +124,13 @@ function makeSpiral(_n, _div, _lenmult, _radmult, curData, curColor) {
             eltDisp = getEltDisp(curPlo, curPhi, curDir);
             if(eltDisp[0] != "none") {
                 drawRange = true;
+                stroke(curRgb.r, curRgb.g, curRgb.b,255.0);
+                strokeWeight(normSW);
             }
             else {
                 drawRange = false;
+                stroke(curRgb.r, curRgb.g, curRgb.b,transpAlpha);
+                strokeWeight(transpSW);
             };
             //console.log(dataLen, curDataLoc, eltLenSoFar, eltLen, curDataPt["elts"].length, eltIdx);
         }; 

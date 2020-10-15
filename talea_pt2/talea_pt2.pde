@@ -22,10 +22,11 @@ void drawVoiceLines() {
   for(int i=0;i<colorArray.length;i++) {
     float idx = pow(i+1,1.1);
     int drawTimes = int(idx*(idx+1.0)/2.0);
+    int strokeWeight = (i+1)*2;
     float curAlpha = min(255, 255.0/(drawTimes * 1.0));
     //println(curAlpha);
     stroke(colorArray[i], curAlpha);
-    strokeWeight(20);
+    strokeWeight(strokeWeight);
     //println(colorArray[i], ch, drawTimes);
     for(int j=0; j < drawTimes; j++) {
       int offset = int(j*drawSpacing);
