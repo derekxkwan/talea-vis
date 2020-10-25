@@ -21,7 +21,7 @@ let radSeg = 4;
 let lenMult = 6;
 let spiralZpos = 2*part1Len*lenMult*overallScale;
 let cylRadSeg = 32;
-let rad = 15;
+let rad = 15 * overallScale;
 let cylRadInner = part1Len * 2 * lenMult * overallScale;
 let cylRadThick = 2000 * overallScale;
 let cylDepth = part1Len * lenMult * 3 * overallScale, cylColor = 0xffea00;
