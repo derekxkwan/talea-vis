@@ -4,6 +4,11 @@
 import * as THREE from "./build/three.module.js";
 import {OrbitControls} from "./lib/OrbitControls.js";
 
+let gradPath = "./res/gradient.png";
+let p1endPath = "./res/part1.png";
+let p2endPath = "./res/part2.png";
+
+let overallScale = 0.1;
 let base_bpm = 80;
 let bg = 0xf9f9f9;
 //let bg = 0x00263f;
@@ -14,12 +19,12 @@ let rotAmt = 0.001 * Math.PI;
 let qual = 10;
 let radSeg = 4;
 let lenMult = 6;
-let spiralZpos = 2*part1Len*lenMult;
+let spiralZpos = 2*part1Len*lenMult*overallScale;
 let cylRadSeg = 32;
 let rad = 15;
-let cylRadInner = part1Len * 2 * lenMult;
-let cylRadThick = 1000;
-let cylDepth = part1Len * lenMult * 3, cylColor = 0xffea00;
+let cylRadInner = part1Len * 2 * lenMult * overallScale;
+let cylRadThick = 2000 * overallScale;
+let cylDepth = part1Len * lenMult * 3 * overallScale, cylColor = 0xffea00;
 const renderer = getRenderer();
 let scene = getScene();
 let camera = getCamera();
@@ -109,7 +114,7 @@ let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorAr
 //console.log(data2["tot_dur"]*lenMult);
 let spr2 = makeSpiral2(1.0);
 //let spr = makeSpiral(data[0], colorArray[0], radArray[0]);
-let cyl1 = makeCyl(cylRadInner, cylDepth);
+let cyl1 = makeTube(cylRadInner, cylDepth, spiralZpos*0.75);
   render();
 
 
@@ -275,9 +280,55 @@ function makeSpiral2(curRadius) {
     return mesh;
 }
 
+function makeCyl(cylRad, depth, zPos, mat) {
+    let geom = new THREE.CylinderGeometry(cylRad, cylRad, depth, cylRadSeg, 1, true);
+    //let mat =  new THREE.MeshPhongMaterial( {color: 0xfafafa, opacity: 0.1, reflectivity: 1, transparent: true, wireframe: false, shininess: 300}); 
+    let mesh = new THREE.Mesh(geom,mat);
+    scene.add(mesh);
+    mesh.rotation.x += Math.PI*0.5;
+    mesh.position.z = zPos;
+    return mesh;
+}
+
+function makeRing(radInner, radOuter, zPos, mat, part) {
+    let geom = new THREE.RingGeometry(radInner, radOuter, cylRadSeg);
+    //let mat =  new THREE.MeshPhongMaterial( {color: cylColor, opacity: 1, reflectivity: 1, transparent: true, wireframe: false, shininess: 300});
+    let mesh = new THREE.Mesh(geom,mat);
+    scene.add(mesh);
+    mesh.position.z = zPos;
+    if(part > 0) {
+        mesh.rotation.y += Math.PI;
+    };
+    return mesh;
+
+}
+
+function makeTube(cylRad, depth, zPos) {
+    let gradLoader = new THREE.ImageLoader();
+    gradLoader.setCrossOrigin('*').load(gradPath,
+        function (img) {
+            let texture = new THREE.CanvasTexture(img);
+            let mat = new THREE.MeshBasicMaterial({color:0xffffff, reflectivity: 0.1, shininess: 100, map: texture, transparent: true, opacity: 0.75});
+            makeCyl(cylRad+cylRadThick, depth, zPos, mat);
+        });
+    let p1endLoader = new THREE.ImageLoader();
+    p1endLoader.setCrossOrigin('*').load(p1endPath,
+        function (img) {
+            let texture = new THREE.CanvasTexture(img, THREE.CubeReflectionMapping, THREE.RepeatWrapping);
+            let mat = new THREE.MeshBasicMaterial({color:0xffffff,  map: texture, transparent: true, opacity: 0.75});
+            makeRing(cylRad-cylRadThick,cylRad+cylRadThick, depth/2 + zPos, mat, 0);
+        });
+    let p2endLoader = new THREE.ImageLoader();
+    p2endLoader.setCrossOrigin('*').load(p2endPath,
+        function (img) {
+            let texture = new THREE.CanvasTexture(img, THREE.CubeReflectionMapping, THREE.RepeatWrapping);
+            let mat = new THREE.MeshBasicMaterial({color:0xffffff, map: texture, transparent: true, opacity: 0.75});
+            makeRing(cylRad, cylRad+cylRadThick, -depth/2 + zPos, mat, 1);
+        });
 
 
-function makeCyl(cylRad, depth) {
+}
+function makeExtTube(cylRad, depth) {
 
     //part 1 edge yellow
     // part 2 edge purple
@@ -335,7 +386,7 @@ function getScene() {
 
   function getCamera() {
     var aspectRatio = window.innerWidth / window.innerHeight;
-    var camera = new THREE.PerspectiveCamera(50, aspectRatio, 0.1, 90000);
+    var camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 999999);
     //camera.position.set(0, 1, -10);
       //camera.position.set(0, 0, 50);
       camera.position.set(0,50,spiralZpos + (1750*lenMult));
@@ -345,11 +396,11 @@ function getScene() {
 
   function getLight(scene) {
     let light = new THREE.PointLight(0xf0f0f0, 1, 0, 1.5);
-    light.position.set(0, 0,spiralZpos + (1000*lenMult));
+    light.position.set(0, 0,spiralZpos + (1000*overallScale*lenMult));
     scene.add(light);
     
     let light2 = new THREE.PointLight(0xf0f0f0, 1, 0, 1.5);
-    light2.position.set(0, 0,-1*(spiralZpos + (1000*lenMult)));
+    light2.position.set(0, 0,-1*(spiralZpos + (1000*overallScale*lenMult)));
     scene.add(light2);
 
     let ambientLight = new THREE.AmbientLight(0x101010);
@@ -379,7 +430,7 @@ function getScene() {
   function makeConicalSpiral(freq, radius, num, htscale) {
 
        let cur_arr = Array.from({length: num}, (x,i) => 
-            new THREE.Vector3(i * radius * Math.cos(freq * i) , i * radius * Math.sin(freq * i), i*htscale)
+            new THREE.Vector3(i * radius * Math.cos(freq * i) * overallScale, i * radius * Math.sin(freq * i) * overallScale, i*htscale * overallScale)
     );
 
       let curve = new THREE.CatmullRomCurve3(cur_arr);

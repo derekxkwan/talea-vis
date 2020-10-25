@@ -1,12 +1,14 @@
-let cw = 1200
-let ch = 1200;
+let cw = 2400
+let ch = 2400;
 let transpAlpha = 100.0;
 let part1Len = data[0]["total_len"];
 let div = 100.0;
-let n = -0.2;
+let n = -0.125;
 let normSW = 3;
+let yDisp = 100;
+let xDisp = -100;
 let transpSW = 1;
-let radMult = 300;
+let radMult = 1000;
 let lenMult = 0.025;
 let rangeScl = 0.0075;
 //let clr1 = [252, 186,3];
@@ -41,6 +43,7 @@ function setup()
     frameRate(24);
     createCanvas(cw,ch);
     console.log(data[0]);
+    translate(xDisp,yDisp);
     drawSpirals();   
 }
 
@@ -165,7 +168,10 @@ function draw()
      
 }
 
-
+function mousePressed()
+{
+    save('part1.png');
+}
 function windowResized()
 {
     resizeCanvas(windowWidth, windowHeight);

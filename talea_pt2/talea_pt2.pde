@@ -23,7 +23,7 @@ void drawVoiceLines() {
     float idx = pow(i+1,1.1);
     int drawTimes = int(idx*(idx+1.0)/2.0);
     int strokeWeight = (i+1)*2;
-    float curAlpha = min(255, 255.0/(drawTimes * 1.0));
+    float curAlpha = min(255, 255.0/(drawTimes * 0.5));
     //println(curAlpha);
     stroke(colorArray[i], curAlpha);
     strokeWeight(strokeWeight);
@@ -57,4 +57,8 @@ void draw () {
       };
       drawLines = false;
   };
+}
+
+void mousePressed() {
+  save("part2.png"); 
 }

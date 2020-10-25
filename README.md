@@ -23,3 +23,7 @@ project with Anne-Sophie Andersen to visualize Gérard Grisey's Talea three-dime
 ## talea_pt2
 - generating texture for part 2 end of cylinder/tube using diffusion limited aggregation
 - decided to use Processing for this bit since it's a bit faster than JS (I think)
+
+## bridge
+- a separate three.js scene for the bridge for now (Anne-Sophie analysis)
+- uses cutupcyl.mtl rendered by me in blender

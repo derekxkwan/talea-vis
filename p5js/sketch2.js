@@ -37,13 +37,13 @@ function drawGradient(color1, color2,startX, startY, endX, endY) {
     let stepR = (color1[0] - color2[0])/stepC;
     let stepG = (color1[1] - color2[1])/stepC;
     let stepB = (color1[2] - color2[2])/stepC;
-    for(let i=startX; i < endX; i++)
+    for(let i=startY; i < endY; i++)
     {
         let curR = color1[0] - (i*stepR);
         let curG = color1[1] - (i*stepG);
         let curB = color1[2] - (i*stepB);
         stroke(curR, curG, curB);
-        line(i,startY, i, endY);
+        line(startX,i, endX, i);
 
     };
     
