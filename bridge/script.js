@@ -9,13 +9,13 @@ import { STLLoader } from './lib/STLLoader.js';
 let bridge = datab["data"];
 let bridgeRadMult = 1;
 let bridgeRotMult = 0.025;
-let coneSize = 2;
+let coneSize = 4;
 let totalRad = bridge["len"][0] + bridge["len"][1];
 let center = [0,0,0];
 let cylZOff = -10;
 let cylScale = 7;
 let bridgeLenMult = 2;
-let bridgeNumMult = (1/7);
+let bridgeNumMult = (1/14);
 let colorArray = [[0x001DFF, 0x8492FF],
                 [0xFE0218, 0xFD8893, 0xCC0202],
                 [0x00c354, 0x66c38e, 0x017031, 0x447559],
@@ -72,29 +72,50 @@ loader.load('./res/cutupcyl.stl', function (geom) {
 //========================================================
 
 //curCenter = [x,y,z]
-function coneCloudLayer(curColor, curOp, curTp, num, curCenter, curRad, zRand) {
+function coneCloudLayer(curColor, curOp, curTp, num, curCenter, curRad, zRand, minSz, curRange, organized) {
     let curEmis = 1.0,curShine = 100;
     let curMat = new THREE.MeshPhongMaterial( {color: curColor, opacity: curOp, transparent: curTp, wireframe: false});
     let cones = [];
-    let curRange = 1;
-    let coneHt = 5;
     let curHRng = 1;
-    for(let i=0; i < num; i++) {
-        let curSize = (Math.random() * curRange) + coneSize;
-        let curHeight = (Math.random() * curHRng) + coneHt;
-        let curGeom = new THREE.TetrahedronGeometry(coneSize);
-        let mesh = new THREE.Mesh(curGeom, curMat);
-        mesh.position.x = (Math.random()*2*curRad) + curCenter[0] - curRad;
-        mesh.position.y = (Math.random()*2*curRad) + curCenter[1] - curRad;
-        mesh.position.z = (Math.random()*2*zRand) + curCenter[2] - zRand;
-        mesh.rotation.x = (Math.random() * 2 * Math.PI);
-        mesh.rotation.y = (Math.random() * 2 * Math.PI);
-        mesh.rotation.z = (Math.random() * 2 * Math.PI);
-        cones.push(mesh);
-        allCones.push(mesh);
-        let curRotDim = Array.from({length: 3}, () => Math.random());
-        conRotDim.push(curRotDim);
-        scene.add(mesh);
+    if(organized == false) {
+        for(let i=0; i < num; i++) {
+            //let curSize = (Math.random() * curRange) + coneSize;
+            //let curHeight = (Math.random() * curHRng) + coneHt;
+            let curSize = (Math.random() * curRange) + minSz + (curRange);
+            //let curGeom = new THREE.TetrahedronGeometry(coneSize);
+            let curGeom = new THREE.SphereGeometry(curSize, 3,2);
+            let mesh = new THREE.Mesh(curGeom, curMat);
+            mesh.position.x = (Math.random()*2*curRad) + curCenter[0] - curRad;
+            mesh.position.y = (Math.random()*2*curRad) + curCenter[1] - curRad;
+            mesh.position.z = (Math.random()*2*zRand) + curCenter[2] - zRand;
+            mesh.rotation.x = (Math.random() * 2 * Math.PI);
+            mesh.rotation.y = (Math.random() * 2 * Math.PI);
+            mesh.rotation.z = (Math.random() * 2 * Math.PI);
+            cones.push(mesh);
+            allCones.push(mesh);
+            let curRotDim = Array.from({length: 3}, () => Math.random());
+            conRotDim.push(curRotDim);
+            scene.add(mesh);
+        };
+    }
+    else {
+         for(let i=0; i < num; i++) {
+            let curSize = (Math.random() * curRange) + coneSize;
+            //let curHeight = (Math.random() * curHRng) + coneHt;
+            let curGeom = new THREE.TetrahedronGeometry(coneSize);
+            let mesh = new THREE.Mesh(curGeom, curMat);
+            mesh.position.x = (Math.random()*2*curRad) + curCenter[0] - curRad;
+            mesh.position.y = (Math.random()*2*curRad) + curCenter[1] - curRad;
+            mesh.position.z = (Math.random()*2*zRand) + curCenter[2] - zRand;
+            //mesh.rotation.x = (Math.random() * 2 * Math.PI);
+            //mesh.rotation.y = (Math.random() * 2 * Math.PI);
+            //mesh.rotation.z = (Math.random() * 2 * Math.PI);
+            cones.push(mesh);
+            //allCones.push(mesh);
+            let curRotDim = Array.from({length: 3}, () => Math.random());
+            conRotDim.push(curRotDim);
+            scene.add(mesh);
+        };
     };
     return cones;
 
@@ -109,10 +130,15 @@ function renderConeLayers() {
         let curZ = idx;
         let curOp = 1;
         let curTp = true;
+        let minSz = 1;
+        let szRng = 0.95;
         let colorOverride = false;
-        let curNum = 1;
+        let organized = false;
+        let curNum = 3;
         if(i < bridge["len"][1]) {
             groupRad = (totalRad - i)*bridgeRadMult;
+            minSz = minSz*(Math.pow(i/(bridge["len"][1] - 1),0.5));
+            szRng = szRng*(Math.pow(i/(bridge["len"][1] - 1),0.5));
             curRad = (i+1)*bridgeRadMult;
             curNum = Math.round((totalRad -1)*bridgeNumMult);
         };
@@ -121,6 +147,7 @@ function renderConeLayers() {
             let curLen = bridge["len"][2];
             curOp = (curLen - curIdx)/curLen;
             curTp = true;
+            organized = true;
         }
         else if (i >= totalRad + bridge["len"][2]) {
             let curIdx = i - (totalRad + bridge["len"][2]);
@@ -128,6 +155,7 @@ function renderConeLayers() {
             curOp = curIdx/curLen;
             curTp = true;
             colorOverride = true;
+            organized = true;
 
         };
         for(let j=0; j < colorArray.length; j++) {
@@ -138,7 +166,8 @@ function renderConeLayers() {
                 curColor = 0x0000ff;
             };
             //console.log(relCenter);
-           coneCloudLayer(curColor, curOp, curTp, curNum, curCenter, curRad, 20);
+            //console.log(i,j, curNum);
+           coneCloudLayer(curColor, curOp, curTp, curNum, curCenter, curRad, 10, minSz, szRng, organized);
         };
     };
 }

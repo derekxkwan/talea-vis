@@ -4,14 +4,19 @@
 import * as THREE from "./build/three.module.js";
 import {OrbitControls} from "./lib/OrbitControls.js";
 
-let gradPath = "./res/gradient.png";
+let gradPath = "./res/cyl.png";
 let p1endPath = "./res/part1.png";
 let p2endPath = "./res/part2.png";
 
+let zOff = 0;
+//let htscale = 1;
+let htscale = 4;
+let mu = 201;
+//let mu = 51;
 let overallScale = 0.1;
 let base_bpm = 80;
-let bg = 0xf9f9f9;
-//let bg = 0x00263f;
+//let bg = 0xf9f9f9;
+let bg = 0x00263f;
 let part1Len = data[0]["total_len"];
 let rotAmt = 0.001 * Math.PI;
 //let bg = 0xffffff;
@@ -19,12 +24,12 @@ let rotAmt = 0.001 * Math.PI;
 let qual = 10;
 let radSeg = 4;
 let lenMult = 6;
-let spiralZpos = 2*part1Len*lenMult*overallScale;
+let spiralZpos = (2*part1Len*lenMult*overallScale*htscale);
 let cylRadSeg = 32;
-let rad = 15 * overallScale;
+let rad = 15 * overallScale*htscale;
 let cylRadInner = part1Len * 2 * lenMult * overallScale;
 let cylRadThick = 2000 * overallScale;
-let cylDepth = part1Len * lenMult * 3 * overallScale, cylColor = 0xffea00;
+let cylDepth = part1Len * lenMult * 3 * overallScale*htscale, cylColor = 0xffea00;
 const renderer = getRenderer();
 let scene = getScene();
 let camera = getCamera();
@@ -114,7 +119,7 @@ let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorAr
 //console.log(data2["tot_dur"]*lenMult);
 let spr2 = makeSpiral2(1.0);
 //let spr = makeSpiral(data[0], colorArray[0], radArray[0]);
-let cyl1 = makeTube(cylRadInner, cylDepth, spiralZpos*0.75);
+let cyl1 = makeTube(cylRadInner, cylDepth, spiralZpos*0.75+zOff);
   render();
 
 
@@ -124,7 +129,7 @@ function makeSpiral(curDict, clrArr, param) {
     let totLen = curDict["total_len"];
     let adjLen = totLen * lenMult;
     let tubLen = adjLen * qual;
-    let curve = makeConicalSpiral(201,param,adjLen,1);
+    let curve = makeConicalSpiral(mu,param,adjLen,htscale);
     let secIdxAdj = part1Len - totLen //because i coded qtr_index against overall part 1 length so I need to adjust
     //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
     //let curve = makeConchospiral(1.065,0.5, 1.3, adjLen);
@@ -218,7 +223,7 @@ function makeSpiral(curDict, clrArr, param) {
     //console.log(geom.parameters);
     //tubularsegments = totlen * lenmult * radial segments * radius
     let mesh = new THREE.Mesh(geom, matArray);
-    mesh.position.z += spiralZpos;
+    mesh.position.z += spiralZpos + zOff;
     scene.add(mesh);
     return mesh;
 }
@@ -230,7 +235,7 @@ function makeSpiral2(curRadius) {
     let adjLen = totLen;
     console.log(totLen);
     let tubLen = adjLen * qual;
-    let curve = makeConicalSpiral(201,curRadius, adjLen,1);
+    let curve = makeConicalSpiral(mu,curRadius, adjLen,htscale);
     //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
     //let curve = makeConchospiral(1.065,0.5, 1.3, adjLen);
     let geom = new THREE.TubeBufferGeometry(curve, tubLen, rad, radSeg, false);
@@ -275,7 +280,7 @@ function makeSpiral2(curRadius) {
     //console.log(matArray);
     let mesh = new THREE.Mesh(geom, matArray);
     mesh.rotation.x += Math.PI;
-    mesh.position.z += spiralZpos;
+    mesh.position.z += spiralZpos+zOff;
     scene.add(mesh);
     return mesh;
 }
@@ -308,21 +313,24 @@ function makeTube(cylRad, depth, zPos) {
     gradLoader.setCrossOrigin('*').load(gradPath,
         function (img) {
             let texture = new THREE.CanvasTexture(img);
-            let mat = new THREE.MeshBasicMaterial({color:0xffffff, reflectivity: 0.1, shininess: 100, map: texture, transparent: true, opacity: 0.75});
+            let mat = new THREE.MeshPhongMaterial({color:0xffffff, reflectivity: 0.1, shininess: 100, map: texture, transparent: true, opacity: 0.75});
+            mat.side = THREE.DoubleSide;
             makeCyl(cylRad+cylRadThick, depth, zPos, mat);
         });
     let p1endLoader = new THREE.ImageLoader();
     p1endLoader.setCrossOrigin('*').load(p1endPath,
         function (img) {
-            let texture = new THREE.CanvasTexture(img, THREE.CubeReflectionMapping, THREE.RepeatWrapping);
-            let mat = new THREE.MeshBasicMaterial({color:0xffffff,  map: texture, transparent: true, opacity: 0.75});
+            let texture = new THREE.CanvasTexture(img);
+            let mat = new THREE.MeshPhongMaterial({color:0xffffff,  map: texture, transparent: true, opacity: 0.75});
+            mat.side = THREE.DoubleSide;
             makeRing(cylRad-cylRadThick,cylRad+cylRadThick, depth/2 + zPos, mat, 0);
         });
     let p2endLoader = new THREE.ImageLoader();
     p2endLoader.setCrossOrigin('*').load(p2endPath,
         function (img) {
-            let texture = new THREE.CanvasTexture(img, THREE.CubeReflectionMapping, THREE.RepeatWrapping);
-            let mat = new THREE.MeshBasicMaterial({color:0xffffff, map: texture, transparent: true, opacity: 0.75});
+            let texture = new THREE.CanvasTexture(img);
+            let mat = new THREE.MeshPhongMaterial({color:0xffffff, map: texture, transparent: true, opacity: 0.75});
+            mat.side = THREE.DoubleSide;
             makeRing(cylRad, cylRad+cylRadThick, -depth/2 + zPos, mat, 1);
         });
 
@@ -389,19 +397,35 @@ function getScene() {
     var camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 999999);
     //camera.position.set(0, 1, -10);
       //camera.position.set(0, 0, 50);
-      camera.position.set(0,50,spiralZpos + (1750*lenMult));
+      camera.position.set(0,50,spiralZpos + (100*lenMult));
 
     return camera;
   }
 
   function getLight(scene) {
-    let light = new THREE.PointLight(0xf0f0f0, 1, 0, 1.5);
-    light.position.set(0, 0,spiralZpos + (1000*overallScale*lenMult));
+    let light = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light.position.set(0, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light);
     
-    let light2 = new THREE.PointLight(0xf0f0f0, 1, 0, 1.5);
-    light2.position.set(0, 0,-1*(spiralZpos + (1000*overallScale*lenMult)));
+    let light2 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light2.position.set(0, 0,zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
     scene.add(light2);
+
+    let light3 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light3.position.set(5000, 0,0);
+    scene.add(light3);
+    
+    let light4 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light4.position.set(-5000, 0,0);
+    scene.add(light4);
+
+    let light5 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light5.position.set(0,5000,0);
+    scene.add(light5);
+    
+    let light6 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light6.position.set(0,-5000,0);
+    scene.add(light6);
 
     let ambientLight = new THREE.AmbientLight(0x101010);
     scene.add(ambientLight);
