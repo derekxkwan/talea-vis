@@ -16,13 +16,16 @@ project with Anne-Sophie Andersen to visualize Gérard Grisey's Talea three-dime
 - the `data` folder has all the data of the spirals converted from csv using my script(s)   
   
 ## p5js
-- generating textures for the cylinder/tube in `docs` (haven't figured out the texturing yet) using p5js
+- generating textures for the cylinder/tube in `docs`
     - `index.html`/`sketch.js` - spirals for the part1 end of the cylinder/tube
-    - `index2.html`/`sketch2.js` - gradient for the side of the cylinder/tube
 
 ## talea_pt2
 - generating texture for part 2 end of cylinder/tube using diffusion limited aggregation
 - decided to use Processing for this bit since it's a bit faster than JS (I think)
+
+## talea_cyl
+- generating texture for cylinder/tube side in `docs`
+    - uses diffusion limited aggregation again and A LOT of magic numbers (to make things line up with talea_pt2)
 
 ## bridge
 - a separate three.js scene for the bridge for now (Anne-Sophie analysis)
