@@ -1,0 +1,11 @@
+#cnv {
+    position: absolute;
+}
+
+#infobox {
+    position: absolute;
+    text-align: right;
+    font-family: Verdana, sans-serif;
+    color: white;
+    width: 100%;
+}

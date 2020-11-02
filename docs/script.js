@@ -8,6 +8,7 @@ let gradPath = "./res/cyl.png";
 let p1endPath = "./res/part1.png";
 let p2endPath = "./res/part2.png";
 
+let lastIntersect;
 let zOff = 0;
 //let htscale = 1;
 let htscale = 4;
@@ -37,8 +38,10 @@ let light = getLight(scene);
 let wireframeMat = new THREE.LineBasicMaterial( { color: 0xffffff } );
 let controls = initControls(camera);
 //let controls = getControls(camera, renderer);
-
+let rayc = new THREE.Raycaster();
 //add emissive dictionary for dynamics
+let mouse = new THREE.Vector2();
+
 let emisDict = {"nient": 0xbababa, "pppp": 0xa6a6a6, "ppp": 0x8f8f8f,
                 "pp": 0x7d7d7d, "p": 0x707070, "mp": 0x5e5e5e,
                 "mf": 0x525252,"f": 0x404040, "ff": 0x262626,
@@ -75,6 +78,35 @@ let matDict = {"a": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transpa
                 "t": {"shininess": 20, "reflectivity": 0.25, "opacity": 0.65, "transparent": true, "colorIdx": -2},
                 "b''": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transparent": true, "colorIdx": 5}
 };
+
+document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+
+let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorArray[i], radArray[i]));
+
+//parsePart2Data(1);
+//console.log(data2["tot_dur"]*lenMult);
+let spr2 = makeSpiral2(1.0);
+//let spr = makeSpiral(data[0], colorArray[0], radArray[0]);
+let cyl1 = makeTube(cylRadInner, cylDepth, spiralZpos*0.75+zOff);
+  render();
+
+
+
+//========================================================
+function onDocumentMouseMove( event ) 
+{
+	// the following line would stop any other event handler from firing
+	// (such as the mouse's TrackballControls)
+	// event.preventDefault();
+	
+	// update the mouse variable
+    //
+    mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+
+}
+
 
 function makeMat(eltType, clrArr, curDyn) {
     let curEmis = 0x000000;
@@ -113,18 +145,8 @@ function makeMatArray(clrArr)
     return [eltDict, retArray];
 }   
 
-let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorArray[i], radArray[i]));
-
-//parsePart2Data(1);
-//console.log(data2["tot_dur"]*lenMult);
-let spr2 = makeSpiral2(1.0);
-//let spr = makeSpiral(data[0], colorArray[0], radArray[0]);
-let cyl1 = makeTube(cylRadInner, cylDepth, spiralZpos*0.75+zOff);
-  render();
 
 
-
-//========================================================
 function makeSpiral(curDict, clrArr, param) {
     let totLen = curDict["total_len"];
     let adjLen = totLen * lenMult;
@@ -224,6 +246,7 @@ function makeSpiral(curDict, clrArr, param) {
     //tubularsegments = totlen * lenmult * radial segments * radius
     let mesh = new THREE.Mesh(geom, matArray);
     mesh.position.z += spiralZpos + zOff;
+    mesh.dataName = "spr1";
     scene.add(mesh);
     return mesh;
 }
@@ -282,6 +305,7 @@ function makeSpiral2(curRadius) {
     mesh.rotation.x += Math.PI;
     mesh.position.z += spiralZpos+zOff;
     scene.add(mesh);
+    mesh.dataName = "spr2";
     return mesh;
 }
 
@@ -292,6 +316,7 @@ function makeCyl(cylRad, depth, zPos, mat) {
     scene.add(mesh);
     mesh.rotation.x += Math.PI*0.5;
     mesh.position.z = zPos;
+    mesh.dataName = "cyl";
     return mesh;
 }
 
@@ -303,6 +328,10 @@ function makeRing(radInner, radOuter, zPos, mat, part) {
     mesh.position.z = zPos;
     if(part > 0) {
         mesh.rotation.y += Math.PI;
+        mesh.dataName = "end2";
+    }
+    else {
+        mesh.dataName = "end1";
     };
     return mesh;
 
@@ -494,6 +523,19 @@ function parsePart2Data() {
 
 function animate()
 {
+    rayc.setFromCamera( mouse, camera );
+    let intersects = rayc.intersectObjects(scene.children, true);
+
+    if (intersects.length > 0) {
+        let intersected = intersects[0].object;
+        if(intersected != lastIntersect) {
+            let curName = intersected.dataName;
+            let infobox = document.getElementById("infobox");
+            infobox.innerHTML = curName;
+        };
+        lastIntersect = intersected;
+    };
+
     if(spr.length >= 5) {
         for(let i in spr) {
             //console.log(s);
@@ -501,6 +543,8 @@ function animate()
         };
     };
     if(spr2 != null) spr2.rotation.z -= rotAmt;
+
+
 }
 function render() {
     animate();
@@ -508,6 +552,7 @@ function render() {
     controls.update();
     renderer.render(scene, camera);
 };
+
 
 //--------------------------------------------------------
 
