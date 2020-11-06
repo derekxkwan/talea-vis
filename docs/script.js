@@ -40,7 +40,17 @@ let controls = initControls(camera);
 //let controls = getControls(camera, renderer);
 let rayc = new THREE.Raycaster();
 //add emissive dictionary for dynamics
+
 let mouse = new THREE.Vector2();
+
+
+let dataText = {["end1"] : "Cylinder front: representation of part 1 as a contrast to part 2\nChronological direction: clockwise\nBright yellow background color: represents a loud texture and the single fundamental C and its partials, which is the harmonic foundation for part 1. \nFive colored strands: representing the five voices of the polyphonic structure. blue=voice 1, red=voice 2 [etc]\n“Range filter”. The development of the melodic ranges of each voice are depicted in the movement of the lines, with pitch height ascending from the center towards the periphery.\n“Microtonal filter” [to be created] \nRank weeds. Weed-like designs in the surface structure (following voice chronology????)", 
+    ["end2"] : "end2",
+    ["spr1"] : "spr1",
+    ["spr2"] : "spr2",
+    ["cyl"] : "cyl"
+};
+
 
 let emisDict = {"nient": 0xbababa, "pppp": 0xa6a6a6, "ppp": 0x8f8f8f,
                 "pp": 0x7d7d7d, "p": 0x707070, "mp": 0x5e5e5e,
@@ -358,7 +368,7 @@ function makeTube(cylRad, depth, zPos) {
     p2endLoader.setCrossOrigin('*').load(p2endPath,
         function (img) {
             let texture = new THREE.CanvasTexture(img);
-            let mat = new THREE.MeshPhongMaterial({color:0xffffff, map: texture, transparent: true, opacity: 0.75});
+            let mat = new THREE.MeshPhongMaterial({color:0xffffff, map: texture, transparent: true, opacity: 0.75, shininess:  1, reflectivity: 0.1});
             mat.side = THREE.DoubleSide;
             makeRing(cylRad, cylRad+cylRadThick, -depth/2 + zPos, mat, 1);
         });
@@ -441,19 +451,19 @@ function getScene() {
     scene.add(light2);
 
     let light3 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
-    light3.position.set(5000, 0,0);
+    light3.position.set(5000, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light3);
     
     let light4 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
-    light4.position.set(-5000, 0,0);
+    light4.position.set(-5000, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light4);
 
     let light5 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
-    light5.position.set(0,5000,0);
+    light5.position.set(0,5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light5);
     
     let light6 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
-    light6.position.set(0,-5000,0);
+    light6.position.set(0,-5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light6);
 
     let ambientLight = new THREE.AmbientLight(0x101010);
@@ -530,8 +540,9 @@ function animate()
         let intersected = intersects[0].object;
         if(intersected != lastIntersect) {
             let curName = intersected.dataName;
+            let curText = dataText[curName]
             let infobox = document.getElementById("infobox");
-            infobox.innerHTML = curName;
+            infobox.innerHTML = curText;
         };
         lastIntersect = intersected;
     };

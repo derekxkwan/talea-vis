@@ -1,21 +1,27 @@
 let cw = 2400
 let ch = 2400;
+let sprRot = Math.PI*(1.45);
+//let cw = 800, ch = 800;
 let transpAlpha = 100.0;
 let part1Len = data[0]["total_len"];
 let div = 100.0;
 let n = -0.125;
-let normSW = 12;
-let yDisp = 100;
-let xDisp = -100;
-let transpSW = 6;
-let radMult = 950;
+let normSW = 8;
+//let yDisp = 100, xDisp = -100;
+let yDisp = 0, xDisp = 0;
+let transpSW = 5;
+let radMult = 910;
 let lenMult = 0.025;
 let rangeScl = 0.0075;
+let comp = 1;
 //let clr1 = [252, 186,3];
 let clr1 = [255, 250,102];
 let colorArray = ["#001DFF", "#FE0218", "#00c354", "#ff9500", "#03F1FE"];
 let cPitch = stringToMidi("ef4");
-
+let circleSpacing = 300;
+let startDiam = 100;
+let numLines = 10;
+let gridClrMult = 0.55, gridWt = 6;
 function hexToRgb(hex) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? {
@@ -30,28 +36,40 @@ function polarToCart(radius, theta) {
 } 
 
 
-
 function preload()
 {
 
     //noStroke();
 }
 
+function drawGrid() {
+    noFill();
+    stroke(clr1[0]*gridClrMult, clr1[1]*gridClrMult, clr1[2]*gridClrMult);
+    strokeWeight(gridWt);
+    for(let i =startDiam; (i < (1.5*cw) && i < (1.5*ch)); i += circleSpacing) {
+        circle(0,0,i);
+    };
+    for(let i=0; i <numLines; i++) {
+        line(-cw,-ch,cw,ch);
+        rotate(Math.PI/(0.5*numLines));
+    };
+}
 function setup()
 {
     //console.log("bob");
     frameRate(24);
     createCanvas(cw,ch);
-    console.log(data[0]);
+    //console.log(data[0]);
     translate(xDisp,yDisp);
-    drawSpirals();   
+    translate(cw/2, ch/2);
+    background(clr1[0], clr1[1], clr1[2]);
+    drawGrid();
+    drawSpirals();
 }
 
 function drawSpirals() {
-     background(clr1[0], clr1[1], clr1[2]);
     // background(255);
-    translate(cw/2, ch/2);
-    rotate(3*PI/2);
+    rotate(sprRot);
     for(let i = 0; i < data.length; i++) {
         makeSpiral(n, div, lenMult, radMult, data[i], colorArray[i]);
     };
@@ -97,7 +115,7 @@ function makeSpiral(_n, _div, _lenmult, _radmult, curData, curColor) {
     let lastDisp = [0,0,0], eltDisp = [0,0,0];
     let drawRange = false;
     let curRgb = hexToRgb(curColor);
-    console.log(curRgb);
+    //console.log(curRgb);
     for(let i=0; i < totalLen; i += (1.0/div)) {
         let letDraw = i >= curOffset;
         if(letDraw && i >= (dataLen + curDataLoc) && dataIdx < dataPts.length - 1){
@@ -162,10 +180,17 @@ function makeSpiral(_n, _div, _lenmult, _radmult, curData, curColor) {
 
 }
 
+function avger(pt) {
+    if(!isNaN(pt[0]) && !isNaN(pt[1])) {
+        npts += 1;
+        xAvg += comp*pt[0];
+        yAvg += comp*pt[1];
+        //console.log(xAvg, yAvg, npts);
+    };
+}
+
 function draw()
 {
-    
-     
 }
 
 function mousePressed()
@@ -177,5 +202,7 @@ function windowResized()
     resizeCanvas(windowWidth, windowHeight);
     cw = windowWidth;
     ch = windowHeight;
+    background(clr1[0], clr1[1], clr1[2]);
     drawSpirals();
+    drawGrid();
 }
