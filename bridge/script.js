@@ -6,6 +6,7 @@ import {OrbitControls} from "./lib/OrbitControls.js";
 import { PLYLoader } from './lib/PLYLoader.js';
 import { STLLoader } from './lib/STLLoader.js';
 //import { OBJLoader } from './lib/OBJLoader.js';
+let discPaths = ['res/disc0.0.png', 'res/disc0.25.png','res/disc0.5.png','res/disc0.75.png','res/disc1.0.png'];
 let bridge = datab["data"];
 let bridgeRadMult = 1;
 let bridgeRotMult = 0.025;
@@ -13,7 +14,9 @@ let coneSize = 4;
 let totalRad = bridge["len"][0] + bridge["len"][1];
 let center = [0,0,0];
 let cylZOff = -10;
+let spiralZpos = 0, zOff = 0, overallScale = 1, lenMult = 1;
 let cylScale = 7;
+let rotScale = 0.01;
 let bridgeLenMult = 2;
 let bridgeNumMult = (1/14);
 let colorArray = [[0x001DFF, 0x8492FF],
@@ -29,146 +32,148 @@ let scene = getScene();
 let camera = getCamera();
 let light = getLight(scene);
 let controls = initControls(camera);
-let allCones = [];
-let conRotDim = [];
-
-
-let loader = new STLLoader();
-loader.load('./res/cutupcyl.stl', function (geom) {
-    //geom.computeVertexNormals();
-    for(let i=0; i < colorArray.length; i++) {
-        let curAngle = Math.PI*2*i/colorArray.length;
-        let relCoords = cylToCart(totalRad*bridgeRadMult, curAngle, cylZOff);
-        let curCoords = [center[0] + relCoords[0], center[1] + relCoords[1], center[2] + relCoords[2]];
-        let curColor = colorArray[i][0];
-        let curOp = 1;
-        let curTp = false;
-        let curMat = new THREE.MeshPhongMaterial( {color: curColor, opacity: curOp, transparent: curTp, wireframe: false});
-        //let curMat = new THREE.MeshBasicMaterial( {color: curColor, opacity: curOp, transparent: curTp, wireframe: false        });
-        let curMesh = new THREE.Mesh(geom, curMat);
-        curMesh.position.x = curCoords[0];
-        curMesh.position.y = curCoords[1];
-        curMesh.position.z = curCoords[2];
-        curMesh.rotation.z = Math.PI*2 * Math.random();
-        curMesh.scale.x = cylScale;
-        curMesh.scale.y = cylScale;
-        curMesh.scale.z = cylScale;
-        scene.add(curMesh);
-    };
-    
-        renderConeLayers();
-
-});
+let cyl = [];
+let rot = [];
 
 
 
 
-
-
+    makeDiscs();
   render();
-
-
-
+console.log(rot);
+/*
+for(let subdiv = 1; subdiv <= 10; subdiv++){
+    let n  = 5;
+    let subdivMult = 1;
+    let curArr = [];
+    let rotAmt = (Math.random()*2.0)-1.0;
+    rot.push(rotAmt);
+    for(let i = 0;  i  < (n * subdiv * subdivMult); i++) {
+        let curLen = (Math.PI*2.0)/(n*subdiv * subdivMult);
+        let curRot = (Math.PI*2.0) * (i/n)/(subdiv * subdivMult);
+        let curRad = 5;
+        //let curCoords = cylToCart(curRad*2, curRot, 0);
+        let curColor = colorArray[i % n][0];
+        let geom = new THREE.CylinderGeometry(curRad, curRad, 1, 5, 1, false, curRot, curLen);
+        let mat = new THREE.MeshPhongMaterial( {color: curColor});
+        let mesh = new THREE.Mesh(geom, mat);
+        curArr.push(mesh);
+        mesh.position.y = (subdiv*2);
+        scene.add(mesh);
+    };
+    cyl.push(curArr);
+};
+*/
 //========================================================
 
-//curCenter = [x,y,z]
-function coneCloudLayer(curColor, curOp, curTp, num, curCenter, curRad, zRand, minSz, curRange, organized) {
-    let curEmis = 1.0,curShine = 100;
-    let curMat = new THREE.MeshPhongMaterial( {color: curColor, opacity: curOp, transparent: curTp, wireframe: false});
-    let cones = [];
-    let curHRng = 1;
-    if(organized == false) {
-        for(let i=0; i < num; i++) {
-            //let curSize = (Math.random() * curRange) + coneSize;
-            //let curHeight = (Math.random() * curHRng) + coneHt;
-            let curSize = (Math.random() * curRange) + minSz + (curRange);
-            //let curGeom = new THREE.TetrahedronGeometry(coneSize);
-            let curGeom = new THREE.SphereGeometry(curSize, 3,2);
-            let mesh = new THREE.Mesh(curGeom, curMat);
-            mesh.position.x = (Math.random()*2*curRad) + curCenter[0] - curRad;
-            mesh.position.y = (Math.random()*2*curRad) + curCenter[1] - curRad;
-            mesh.position.z = (Math.random()*2*zRand) + curCenter[2] - zRand;
-            mesh.rotation.x = (Math.random() * 2 * Math.PI);
-            mesh.rotation.y = (Math.random() * 2 * Math.PI);
-            mesh.rotation.z = (Math.random() * 2 * Math.PI);
-            cones.push(mesh);
-            allCones.push(mesh);
-            let curRotDim = Array.from({length: 3}, () => Math.random());
-            conRotDim.push(curRotDim);
-            scene.add(mesh);
-        };
-    }
-    else {
-         for(let i=0; i < num; i++) {
-            let curSize = (Math.random() * curRange) + coneSize;
-            //let curHeight = (Math.random() * curHRng) + coneHt;
-            let curGeom = new THREE.TetrahedronGeometry(coneSize);
-            let mesh = new THREE.Mesh(curGeom, curMat);
-            mesh.position.x = (Math.random()*2*curRad) + curCenter[0] - curRad;
-            mesh.position.y = (Math.random()*2*curRad) + curCenter[1] - curRad;
-            mesh.position.z = (Math.random()*2*zRand) + curCenter[2] - zRand;
-            //mesh.rotation.x = (Math.random() * 2 * Math.PI);
-            //mesh.rotation.y = (Math.random() * 2 * Math.PI);
-            //mesh.rotation.z = (Math.random() * 2 * Math.PI);
-            cones.push(mesh);
-            //allCones.push(mesh);
-            let curRotDim = Array.from({length: 3}, () => Math.random());
-            conRotDim.push(curRotDim);
-            scene.add(mesh);
-        };
-    };
-    return cones;
+
+function discMaker(curRad, height, curQual, zPos, img, txrRptTimes, rotAmt, curOp) {
+
+    let curTxr = new THREE.CanvasTexture(img);
+    let curTp = curOp < 1;
+    curTxr.wrapS = THREE.RepeatWrapping;
+    curTxr.repeat.x = txrRptTimes;
+    let mat = new THREE.MeshPhongMaterial({color:0xffffff, reflectivity: 0.1, shininess: 100, map: curTxr, transparent: curTp, opacity: curOp});
+    mat.side = THREE.DoubleSide;
+    let geom = new THREE.CylinderGeometry(curRad, curRad, height, curQual, 1, true);
+    let mesh = new THREE.Mesh(geom, mat);
+    mesh.rotation.x += Math.PI*0.5;
+    mesh.position.z = zPos;
+    scene.add(mesh);
+    cyl.push(mesh);
+    rot.push(rotAmt);
 
 }
 
-function renderConeLayers() {
-    for(let idx =0; idx < bridge["total_len"]*bridgeLenMult; idx++) {
-        let i = Math.round(idx/bridgeLenMult);
-    //for(let i =0; i < 1; i++) {
-        let groupRad = 0;
-        let curRad = totalRad*bridgeRadMult;
-        let curZ = idx;
-        let curOp = 1;
-        let curTp = true;
-        let minSz = 1;
-        let szRng = 0.95;
-        let colorOverride = false;
-        let organized = false;
-        let curNum = 3;
-        if(i < bridge["len"][1]) {
-            groupRad = (totalRad - i)*bridgeRadMult;
-            minSz = minSz*(Math.pow(i/(bridge["len"][1] - 1),0.5));
-            szRng = szRng*(Math.pow(i/(bridge["len"][1] - 1),0.5));
-            curRad = (i+1)*bridgeRadMult;
-            curNum = Math.round((totalRad -1)*bridgeNumMult);
-        };
-        if (i >= totalRad && i < totalRad + bridge["len"][2]) {
-            let curIdx = i - totalRad;
-            let curLen = bridge["len"][2];
-            curOp = (curLen - curIdx)/curLen;
-            curTp = true;
-            organized = true;
-        }
-        else if (i >= totalRad + bridge["len"][2]) {
-            let curIdx = i - (totalRad + bridge["len"][2]);
-            let curLen = bridge["len"][3];
-            curOp = curIdx/curLen;
-            curTp = true;
-            colorOverride = true;
-            organized = true;
+//64: 14(five colors) 11(merging) 18(merged -> transparent) 21(transparent to blue)
+function makeDiscs() {
+        let bridgeZOff = 0;
+        let thickMult = 1;
+        let distMult = 3;
+        let disc2Off = -6;
+        let disc3Off = -5;
+        let disc4Off = -5;
+        let curQual = 10;
+        let curRad = 50;
+        let tpPow = 3;
+        let disc2rotMult = 0.75;
+        let disc3rotMult = 0.75;
+        let splitStage = datab["data"]["len"][0];
+        let mergeStage = datab["data"]["len"][1];
+        let fadeStage = datab["data"]["len"][2];
+        let blueStage = datab["data"]["len"][3];
+        let discLoader = new THREE.ImageLoader();
+        distMult *= thickMult;
+        disc2Off *= thickMult;
+        disc3Off *= thickMult;
+    for(let i=0; i < discPaths.length; i++) {
+        discLoader.setCrossOrigin('*').load( discPaths[i],
+        function (img) {
+            let rotAmt = (Math.random()*2.0)-1.0;
+            if(i == 0) {
+                let rotAmt = (Math.random()*2.0)-1.0;
+                discMaker(curRad, splitStage*distMult, curQual, bridgeZOff, img, 1, rotAmt, 1);
+            }
+            else if(i == 1) {
+                for(let j=0; j < 1*distMult; j++) {
+                    let curZ = ((splitStage+disc2Off)*distMult)+(j*thickMult);
+                    let curRpt = i*distMult + j;
+                    let curRot = disc2rotMult*Math.PI*2.0*((i-1)*distMult+j)/(mergeStage*distMult);
+                    discMaker(curRad, thickMult, curQual, curZ+bridgeZOff, img, curRpt, curRot,1);
+                };
+            }
+            else if(i ==2) {
+                for(let j=0; j < 1*distMult; j++) {
+                    let curZ = ((splitStage+(1*thickMult)+disc2Off)*distMult)+(j*thickMult);
+                    let curRpt = i*distMult + j;
+                    let curRot = disc2rotMult*Math.PI*2.0*((i-1)*distMult+j)/(mergeStage*distMult);
+                    discMaker(curRad, thickMult, curQual, curZ+bridgeZOff, img, curRpt, curRot,1);
+                };
 
-        };
-        for(let j=0; j < colorArray.length; j++) {
-            let curColor = colorArray[j][0];
-            let relCenter = cylToCart(groupRad, j*Math.PI*2/colorArray.length, curZ);
-            let curCenter = Array.from(relCenter, (e,i) => center[i] + relCenter[i]);
-            if(colorOverride == true) {
-                curColor = 0x0000ff;
+            }
+            else if (i==3) {
+                for(let j=0; j < 1*distMult; j++) {
+                    let curZ = ((splitStage+(2*thickMult)+disc2Off)*distMult)+(j*thickMult);
+                    let curRpt = i*distMult + j;
+                    let curRot = disc2rotMult*Math.PI*2.0*((i-1)*distMult+j)/(mergeStage*distMult);
+                    discMaker(curRad, thickMult, curQual, curZ+bridgeZOff, img, curRpt, curRot,1);
+                };
+            }
+            else {
+                for(let j=0; j < (mergeStage-3)*distMult; j++) {
+                    let curZ = ((splitStage+(3*thickMult)+disc2Off)*distMult) + (j*thickMult);
+                    let curRpt = (i*distMult)+j;
+                    let curRot = disc2rotMult*Math.PI*2.0*((i-1)*distMult+j)/(mergeStage*distMult);
+                    discMaker(curRad, thickMult, curQual, curZ+bridgeZOff, img, curRpt, curRot,1);
+                };
+                for(let j=0; j < fadeStage*distMult; j++) {
+                    let curZ = ((splitStage+mergeStage+disc3Off)*distMult) + (j*thickMult);
+                    let curRpt = (i+mergeStage-3)*distMult;
+                    let curIterRev = (fadeStage*distMult-j)/(fadeStage*distMult);
+                    let curRot = disc3rotMult*Math.PI*2.0*curIterRev;
+                    let curOp = Math.pow(curIterRev,tpPow);
+                    discMaker(curRad, thickMult, curQual, curZ+bridgeZOff, img, curRpt, curRot,curIterRev);
+
+                };
             };
-            //console.log(relCenter);
-            //console.log(i,j, curNum);
-           coneCloudLayer(curColor, curOp, curTp, curNum, curCenter, curRad, 10, minSz, szRng, organized);
-        };
+            });
+
+        for(let j=0; j < blueStage*distMult; j++) {
+            let curZ = ((splitStage+mergeStage+fadeStage+disc4Off)*distMult) + (j*thickMult);
+            let curOp = Math.pow(j/(blueStage*distMult-1),tpPow);
+            let geom = new THREE.CylinderGeometry(curRad, curRad, thickMult, curQual, 1, true);
+            let curColor = colorArray[0][0];
+            let mat = new THREE.MeshPhongMaterial({color:curColor, reflectivity: 0.1, shininess: 100, transparent: true, opacity: curOp});
+            let mesh = new THREE.Mesh(geom, mat);
+            let rotAmt = 0;
+            mat.side = THREE.DoubleSide;
+            mesh.rotation.x += Math.PI*0.5;
+            mesh.position.z = curZ+bridgeZOff;
+            scene.add(mesh);
+            cyl.push(mesh);
+            rot.push(rotAmt);
+
+            };
     };
 }
 
@@ -200,19 +205,34 @@ function getScene() {
   }
 
   function getLight(scene) {
-    let light = new THREE.PointLight(0xf0f0f0, 1, 0, 1.5);
-    light.position.set(0, 0,1000);
-    //light.position.set(0, 0,0);
+   let light = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light.position.set(0, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light);
     
-    let light2 = new THREE.PointLight(0xf0f0f0, 1, 0, 1.5);
-    light2.position.set(0, 0,-1000);
-    //light2.position.set(0, 0,0);
+    let light2 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light2.position.set(0, 0,zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
     scene.add(light2);
+
+    let light3 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light3.position.set(5000, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
+    scene.add(light3);
+    
+    let light4 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light4.position.set(-5000, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
+    scene.add(light4);
+
+    let light5 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light5.position.set(0,5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
+    scene.add(light5);
+    
+    let light6 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    light6.position.set(0,-5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
+    scene.add(light6);
 
     let ambientLight = new THREE.AmbientLight(0x101010);
     scene.add(ambientLight);
     return light;
+ 
   }
 
   function getRenderer() {
@@ -240,12 +260,11 @@ function getScene() {
 
 function animate()
 {
-    allCones.forEach((c,i)=> {
-        let curRotDim = conRotDim[i];
-        c.rotation.x += Math.PI* curRotDim[0] * bridgeRotMult;
-        c.rotation.y += Math.PI* curRotDim[1] * bridgeRotMult;
-        c.rotation.z += Math.PI* curRotDim[2] * bridgeRotMult;
-    });
+    for(let i=0; i < cyl.length; i++) {
+        let curRot = rot[i];
+        let curCyl = cyl[i];
+             curCyl.rotation.y += (curRot * rotScale);
+    };
 }
 function render() {
     animate();
