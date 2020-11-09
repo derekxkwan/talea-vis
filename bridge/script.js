@@ -16,7 +16,7 @@ let center = [0,0,0];
 let cylZOff = -10;
 let spiralZpos = 0, zOff = 0, overallScale = 1, lenMult = 1;
 let cylScale = 7;
-let rotScale = 0.01;
+let rotScale = 0.005;
 let bridgeLenMult = 2;
 let bridgeNumMult = (1/14);
 let colorArray = [[0x001DFF, 0x8492FF],
@@ -89,11 +89,11 @@ function discMaker(curRad, height, curQual, zPos, img, txrRptTimes, rotAmt, curO
 function makeDiscs() {
         let bridgeZOff = 0;
         let thickMult = 1;
-        let distMult = 3;
+        let distMult = 1;
         let disc2Off = -6;
         let disc3Off = -5;
         let disc4Off = -5;
-        let curQual = 10;
+        let curQual = 20;
         let curRad = 50;
         let tpPow = 3;
         let disc2rotMult = 0.75;
@@ -109,9 +109,10 @@ function makeDiscs() {
     for(let i=0; i < discPaths.length; i++) {
         discLoader.setCrossOrigin('*').load( discPaths[i],
         function (img) {
-            let rotAmt = (Math.random()*2.0)-1.0;
+            //let rotAmt = (Math.random()*2.0)-1.0;
             if(i == 0) {
-                let rotAmt = (Math.random()*2.0)-1.0;
+                //let rotAmt = (Math.random()*2.0)-1.0;
+                let rotAmt = Math.PI*2.0 * (1/10);
                 discMaker(curRad, splitStage*distMult, curQual, bridgeZOff, img, 1, rotAmt, 1);
             }
             else if(i == 1) {

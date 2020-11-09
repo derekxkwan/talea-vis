@@ -21,7 +21,7 @@ let cPitch = stringToMidi("ef4");
 let circleSpacing = 300;
 let startDiam = 100;
 let numLines = 10;
-let gridClrMult = 0.55, gridWt = 6;
+let gridClrMult = 0.6, gridWt = 4;
 function hexToRgb(hex) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? {
@@ -43,11 +43,25 @@ function preload()
 }
 
 function drawGrid() {
+    let _n = -0.125*3.5;
+    let _npts = 10000;
+    let _radmult = 91*30;
+    let prev = [0,0];
+    let _qual = 10.0;
     noFill();
     stroke(clr1[0]*gridClrMult, clr1[1]*gridClrMult, clr1[2]*gridClrMult);
     strokeWeight(gridWt);
+    /*
     for(let i =startDiam; (i < (1.5*cw) && i < (1.5*ch)); i += circleSpacing) {
         circle(0,0,i);
+    };
+    */
+    for(let i = 0 ; i < _npts*_qual; i++) {
+        let idx = i/_qual;
+        let multiplier = (Math.pow(idx,_n)) * _radmult;
+        let pt = [multiplier*Math.cos(idx), multiplier*Math.sin(idx)];
+        line(prev[0], prev[1], pt[0], pt[1]);
+        prev = pt;
     };
     for(let i=0; i <numLines; i++) {
         line(-cw,-ch,cw,ch);

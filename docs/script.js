@@ -22,8 +22,8 @@ let part1Len = data[0]["total_len"];
 let rotAmt = 0.001 * Math.PI;
 //let bg = 0xffffff;
 //let bg = 0x000000;
-let qual = 10;
-let radSeg = 4;
+let qual = 5;
+let radSeg = 5;
 let lenMult = 6;
 let spiralZpos = (2*part1Len*lenMult*overallScale*htscale);
 let cylRadSeg = 32;
@@ -52,11 +52,13 @@ let dataText = {["end1"] : "Cylinder front: representation of part 1 as a contra
 };
 
 
-let emisDict = {"nient": 0xbababa, "pppp": 0xa6a6a6, "ppp": 0x8f8f8f,
-                "pp": 0x7d7d7d, "p": 0x707070, "mp": 0x5e5e5e,
-                "mf": 0x525252,"f": 0x404040, "ff": 0x262626,
+let emisDict = {"nient": 0x656565, "pppp": 0x5a5a5a, "ppp": 0x505050,
+                "pp": 0x464646, "p": 0x3c3c3c, "mp": 0x303030,
+                "mf": 0x202020,"f": 0x121212, "ff": 0x090909,
                 "fff": 0x000000};
 
+
+//let emisDict = {"nient": 0x
 let radArray = [1, 0.8, 0.6, 0.4, 0.2];
 let colorArray = [[0x001DFF, 0x8492FF],
                 [0xFE0218, 0xFD8893, 0xCC0202],
@@ -131,6 +133,8 @@ function makeMat(eltType, clrArr, curDyn) {
     };
     if(Object.keys(emisDict).includes(curDyn)) {
         curEmis = emisDict[curDyn];
+        //curEmis = 0x000000;
+        //curEmis = 0xffffff;
     };
     curElt["emissive"] = curEmis;
     let curMat = new THREE.MeshPhongMaterial( {color: curColor, emissive: curEmis, opacity: curElt["opacity"], transparent: curElt["transparent"], wireframe: false, shininess: curElt["shininess"]});
@@ -442,27 +446,30 @@ function getScene() {
   }
 
   function getLight(scene) {
-    let light = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    let intensity1 = 0.35;
+    let intensity2 = 0.85;
+    let lightDist = 0;
+    let light = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
     light.position.set(0, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light);
     
-    let light2 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    let light2 = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
     light2.position.set(0, 0,zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
     scene.add(light2);
 
-    let light3 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    let light3 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
     light3.position.set(5000, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light3);
     
-    let light4 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    let light4 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
     light4.position.set(-5000, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light4);
 
-    let light5 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    let light5 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
     light5.position.set(0,5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light5);
     
-    let light6 = new THREE.PointLight(0xf0f0f0, 1, 0, 1);
+    let light6 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
     light6.position.set(0,-5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light6);
 
