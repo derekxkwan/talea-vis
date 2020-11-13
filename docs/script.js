@@ -446,36 +446,48 @@ function getScene() {
   }
 
   function getLight(scene) {
-    let intensity1 = 0.35;
-    let intensity2 = 0.85;
+    let intensity1 = 0.5;
+    let intensity2 = 0.5;
+    //let intensity1 = 0.85;
+    let intensity3 = 0.5;
+    //let intensity2 = 0.85;
     let lightDist = 0;
-    let light = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
-    light.position.set(0, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
-    scene.add(light);
+    let light1 = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
+    light1.position.set(5000, 5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
+    scene.add(light1);
     
-    let light2 = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
-    light2.position.set(0, 0,zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
+    let light1a = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
+    light1a.position.set(-5000, -5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
+    scene.add(light1a);
+    
+
+    let light2 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
+    light2.position.set(5000, 5000, zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
     scene.add(light2);
 
-    let light3 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
+    let light2a = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
+    light2a.position.set(-5000, -5000,zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
+    scene.add(light2a);
+
+
+    let light3 = new THREE.PointLight(0xf0f0f0, intensity3, lightDist, 1);
     light3.position.set(5000, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light3);
     
-    let light4 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
+    let light4 = new THREE.PointLight(0xf0f0f0, intensity3, lightDist, 1);
     light4.position.set(-5000, 0,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light4);
 
-    let light5 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
+    let light5 = new THREE.PointLight(0xf0f0f0, intensity3, lightDist, 1);
     light5.position.set(0,5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light5);
     
-    let light6 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
+    let light6 = new THREE.PointLight(0xf0f0f0, intensity3, lightDist, 1);
     light6.position.set(0,-5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
     scene.add(light6);
 
     let ambientLight = new THREE.AmbientLight(0x101010);
     scene.add(ambientLight);
-    return light;
   }
 
   function getRenderer() {

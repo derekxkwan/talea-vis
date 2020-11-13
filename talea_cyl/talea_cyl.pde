@@ -21,6 +21,20 @@ int[] colorArray = {#001dff,#fc03e8,
                       #03F1FE,#03bafc
                         };
 
+
+
+int[] hexToRgb(int curHex) {
+    int[] rgb = {0,0,0};
+    int r = (curHex & 0xFF0000) >> 16;
+    int g = (curHex & 0xFF00) >> 8;
+    int b = (curHex & 0xFF);
+    rgb[0] = r;
+    rgb[1] = g;
+    rgb[2] = b;
+    return rgb;
+}
+
+
 void drawVoiceCurves() {
   int cw = int(initW*6);
   float ctr = width/2.0;
@@ -42,16 +56,36 @@ void drawVoiceCurves() {
     //int drawTimes = max(1,int(drawScale*idx*(idx+1.0)/6.0));
     int drawTimes = drawTimesArr[i];
     int strokeWt = (i+1)*2;
-    float curAlpha = min(255, 255.0/(drawTimes));
+    //float curAlpha = min(255, 255.0/(drawTimes));
+    float baseAlpha = min(255, 255.0/(drawTimes * 0.5));
+    int[] baseColor = hexToRgb(colorArray[i]);
     //int fromCtr = cw + ((i*spacingH) - max(0,4*(i))*sCompH);
     int fromCtr = fromCtrArr[i];
     float curX0 = ctr + fromCtr;
     float curX1 = ctr - fromCtr;
+    float randBand = (i*2);
+    float randAlpha = (i*2);
     println(fromCtr, drawTimes);
-    stroke(colorArray[i], curAlpha);
     strokeWeight(strokeWt);
     for(int j=0; j <drawTimes; j++) {
+      int[] curColor = {0,0,0};
       int offset = int(j*drawSpacing);
+      float curAlpha = 0;
+      if(j > 0) {
+          float rA = (randAlpha*2.0* float((3+j)*31 % 59)/59) - randAlpha;
+          curAlpha = int(max(0, min(255, baseAlpha + rA)));
+          for(int k=0; k < baseColor.length; k++) {
+            float curRand = (randBand*2.0* float((k+j)*31 % 59)/59) - randBand;
+            curColor[k] = int(max(0, min(255, baseColor[k] + curRand)));
+          };
+      }
+      else {
+        for(int k=0; k < baseColor.length; k++) {
+          curColor[k] = baseColor[k];
+          curAlpha = baseAlpha;
+        };
+      };
+      stroke(curColor[0], curColor[1], curColor[2], curAlpha);
       bezier(ctr, 0, ctl0X0, ctl0Y0, ctl0X1, ctl0Y1,curX0+offset, height);
       bezier(ctr, 0, ctl1X0, ctl1Y0, ctl1X1, ctl1Y1,curX1-offset, height);
     };
@@ -59,8 +93,7 @@ void drawVoiceCurves() {
 
   };
 }
-
-/*
+  /*
 void drawVoiceLines() {
   int ch = initW;
   int spacingV = int((height-(initH*2))/(colorArray.length));
@@ -117,7 +150,7 @@ void setup () {
   size(2000,2000);
   hint(ENABLE_STROKE_PURE);
   dla = new DLA(int(width/curDiv), int(height/curDiv), num, sticky, int(width/(curDiv*2)), 0);
-  //background(clr2[0], clr2[1], clr2[2]);
+  background(clr2[0], clr2[1], clr2[2]);
   lines = dla.generate(curDiv);
   drawLines = true;
   drawGradient(clr1, clr2, 0, 0, width, height);
@@ -143,5 +176,5 @@ void draw () {
 }
 
 void mousePressed() {
-  save("cyl.png"); 
+  save("cyltest.png"); 
 }
