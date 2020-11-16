@@ -27,6 +27,7 @@ void setup () {
   strokeWeight(1);
   for(int x=0; x < width; x++) {
     int[] curColor = new int[3];
+    int realx = x;
     if(blendAmt < 0.01) {
       curColor = hexToRgb(colorArray[int(x/clrW) % n][0]);
     }
@@ -34,6 +35,8 @@ void setup () {
       float curStep = x/float(clrW);
       float blendPos = curStep - int(curStep);
       int idx1 = int(curStep) % n;
+      float offset = (blendAmt * 0.75 * width/n);
+      realx = int(x + width + offset) % width;
       if(blendPos > blendStart) {
         float curBlend = (blendPos - blendStart)/blendAmt;
         int idx2 = (idx1+1) % n;
@@ -54,7 +57,7 @@ void setup () {
       };
     };
     stroke(curColor[0], curColor[1], curColor[2]);
-    line(x,0,x,height);
+    line(realx,0,realx,height);
   };
 }
 

@@ -8,6 +8,15 @@ let gradPath = "./res/cyl.png";
 let p1endPath = "./res/part1.png";
 let p2endPath = "./res/part2.png";
 
+//bridgeStuff
+let bridgeCyl = [];
+let bridgeRot = [];
+let bridgeRotScale = 0.005;
+let bridgeLenMult = 3;
+let discPaths = ['res/disc0.0.png', 'res/disc0.125.png', 'res/disc0.25.png', 'res/disc0.375.png', 'res/disc0.5.png', 'res/disc0.625.png', 'res/disc0.75.png', 'res/disc0.875.png', 'res/disc1.0.png'];
+
+let bridgeLen = datab["data"]["total_len"]*bridgeLenMult;
+//-----------------
 let lastIntersect;
 let zOff = 0;
 //let htscale = 1;
@@ -15,6 +24,7 @@ let htscale = 4;
 let mu = 201;
 //let mu = 51;
 let overallScale = 0.1;
+let bridgeScale = 5 * overallScale;
 let base_bpm = 80;
 //let bg = 0xf9f9f9;
 let bg = 0x00263f;
@@ -25,7 +35,7 @@ let rotAmt = 0.001 * Math.PI;
 let qual = 5;
 let radSeg = 5;
 let lenMult = 6;
-let spiralZpos = (2*part1Len*lenMult*overallScale*htscale);
+let spiralZpos = (2*part1Len*lenMult*overallScale*htscale)+(bridgeLen*bridgeScale);
 let cylRadSeg = 32;
 let rad = 15 * overallScale*htscale;
 let cylRadInner = part1Len * 2 * lenMult * overallScale;
@@ -101,7 +111,10 @@ let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorAr
 let spr2 = makeSpiral2(1.0);
 //let spr = makeSpiral(data[0], colorArray[0], radArray[0]);
 let cyl1 = makeTube(cylRadInner, cylDepth, spiralZpos*0.75+zOff);
-  render();
+
+
+makeDiscs(spiralZpos-(bridgeLen*bridgeLenMult*0), bridgeScale, bridgeLenMult*2);
+render();
 
 
 
@@ -317,7 +330,7 @@ function makeSpiral2(curRadius) {
     //console.log(matArray);
     let mesh = new THREE.Mesh(geom, matArray);
     mesh.rotation.x += Math.PI;
-    mesh.position.z += spiralZpos+zOff;
+    mesh.position.z += spiralZpos+zOff-(bridgeLen*bridgeScale);
     scene.add(mesh);
     mesh.dataName = "spr2";
     return mesh;
@@ -440,7 +453,7 @@ function getScene() {
     var camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 999999);
     //camera.position.set(0, 1, -10);
       //camera.position.set(0, 0, 50);
-      camera.position.set(0,50,spiralZpos + (100*lenMult));
+      camera.position.set(5000,0,spiralZpos + (100*lenMult));
 
     return camera;
   }
@@ -555,6 +568,7 @@ function animate()
     rayc.setFromCamera( mouse, camera );
     let intersects = rayc.intersectObjects(scene.children, true);
 
+    bridgeAnim();
     if (intersects.length > 0) {
         let intersected = intersects[0].object;
         if(intersected != lastIntersect) {
@@ -585,4 +599,159 @@ function render() {
 
 
 //--------------------------------------------------------
+//BRIDGE STUFF
+
+//provide mat
+function discMaker2(curRad, height, curQual, zPos, curMat, txrRptTimes, rotAmt, curOp) {
+
+    let geom = new THREE.CylinderGeometry(curRad, curRad, height, curQual, 1, true);
+    let mesh = new THREE.Mesh(geom, curMat);
+    mesh.rotation.x += Math.PI*0.5;
+    mesh.position.z = zPos;
+    scene.add(mesh);
+    bridgeCyl.push(mesh);
+    bridgeRot.push(rotAmt);
+
+}
+
+
+function discMaker(curRad, height, curQual, zPos, img, txrRptTimes, rotAmt, curOp) {
+
+    let curTxr = new THREE.CanvasTexture(img);
+    let curTp = curOp < 1;
+    curTxr.wrapS = THREE.RepeatWrapping;
+    curTxr.repeat.x = txrRptTimes;
+    let mat = new THREE.MeshPhongMaterial({color:0xffffff, reflectivity: 0.1, shininess: 100, map: curTxr, transparent: curTp, opacity: curOp});
+    mat.side = THREE.DoubleSide;
+    let geom = new THREE.CylinderGeometry(curRad, curRad, height, curQual, 1, true);
+    let mesh = new THREE.Mesh(geom, mat);
+    mesh.rotation.x += Math.PI*0.5;
+    mesh.position.z = zPos;
+    scene.add(mesh);
+    bridgeCyl.push(mesh);
+    bridgeRot.push(rotAmt);
+
+}
+
+//curZ, curRpt, curRot
+function mergeStageCoords(texidx, numidx, splitStage, mergeStage, thickMult, distMult, disc2Off, disc2rotMult) {
+    let curZ = ((splitStage+((texidx-1)*thickMult)+disc2Off)*distMult)+(numidx*thickMult);
+    let curRpt = (((texidx-1)*distMult) + numidx)/(mergeStage*4) + 1;
+    let curRot = disc2rotMult*Math.PI*2.0*((texidx-1)*distMult+numidx+1)/(mergeStage*distMult*2);
+    //let curRot = 0;
+    return [curZ, curRpt, curRot];
+}
+
+
+function bridgeAnim() {
+    for(let i=0; i < bridgeCyl.length; i++) {
+        let curRot = bridgeRot[i];
+        let curCyl = bridgeCyl[i];
+             curCyl.rotation.y += (curRot * bridgeRotScale);
+    };
+
+}
+
+
+//64: 14(five colors) 11(merging) 18(merged -> transparent) 21(transparent to blue)
+function makeDiscs(bridgeZOff, thickMult, distMult) {
+        let disc2Off = 0;
+        let disc3Off = 0;
+        let disc4Off = 0;
+        let curQual = 7;
+        let curRad = 30*thickMult;
+        let tpPow = 3;
+        let curDir = -1;
+        let disc2rotMult = 0.75;
+        let disc3rotMult = 0.75;
+        let splitStage = datab["data"]["len"][0];
+        let mergeStage = datab["data"]["len"][1];
+        let fadeStage = datab["data"]["len"][2];
+        let blueStage = datab["data"]["len"][3];
+        let discLoader = new THREE.ImageLoader();
+        let idxMultStart = 1;
+        let idxMultEnd = 4;
+        distMult *= thickMult;
+        disc2Off *= thickMult;
+        disc3Off *= thickMult;
+    for(let i=0; i < discPaths.length; i++) {
+        discLoader.setCrossOrigin('*').load( discPaths[i],
+        function (img) {
+            //let rotAmt = (Math.random()*2.0)-1.0;
+            if(i == 0) {
+                //let rotAmt = (Math.random()*2.0)-1.0;
+                let idx = 1;
+                let curTxr = new THREE.CanvasTexture(img);
+                curTxr.wrapS = THREE.RepeatWrapping;
+                curTxr.repeat.x = 1;
+                let mat = new THREE.MeshPhongMaterial({color:0xffffff, reflectivity: 0.1, shininess: 100, map: curTxr});
+                mat.side = THREE.DoubleSide;
+                let j = 0;
+                //let rotAmt = 0;
+                let rotAmt = disc2rotMult*Math.PI*2.0*((idx-1)*distMult+j+1)/(mergeStage*distMult*2);
+                //let rotAmt = disc2rotMult*Math.PI*2.0*((idx-1)*distMult+j)/(mergeStage*distMult*2);
+                for(let j=0; j < splitStage*distMult; j++) {
+                    //let rotAmt = Math.PI*(i*distMult+j)/(splitStage*distMult);
+                    discMaker2(curRad, thickMult, curQual, bridgeZOff+(curDir*j*thickMult), mat, 1, rotAmt, 1);
+                };
+            }
+            else {
+               if (i <=7) {
+                   let idxMult = 1;
+                   if(i >= idxMultStart && i < idxMultEnd) {
+                        idxMult = 2;
+                   };
+                    for(let j=0; j < 1*distMult*idxMult; j++) {
+                        let curCoords = mergeStageCoords(i,j, splitStage, mergeStage, thickMult, distMult, disc2Off, disc2rotMult);
+                        let curZ = curCoords[0]*curDir;
+                        let curRpt = curCoords[1];
+                        let curRot = curCoords[2];
+                        discMaker(curRad, thickMult, curQual, curZ+bridgeZOff, img, curRpt, curRot,1);
+                        //console.log(curRot, curRpt, "merge");
+                    };
+                }
+                else {
+                    for(let j=0; j < (mergeStage-(7 + (idxMultEnd - idxMultStart)))*distMult; j++) {
+                        let curCoords = mergeStageCoords(i,j, splitStage, mergeStage, thickMult, distMult, disc2Off, disc2rotMult);
+                        let curZ = curCoords[0]*curDir;
+                        let curRpt = curCoords[1];
+                        let curRot = curCoords[2];
+                        discMaker(curRad, thickMult, curQual, curZ+bridgeZOff, img, curRpt, curRot,1);
+                        //console.log(curRot, curRpt, "merge");
+                    };
+                    for(let j=0; j < fadeStage*distMult; j++) {
+                        let curZ = (((splitStage+mergeStage-3)*thickMult+disc3Off)*distMult) + (j*thickMult);
+                        //let curRpt = (i+mergeStage-3)*distMult;
+                        let curRpt = (((i-1)*distMult) + (mergeStage-(7 + (idxMultEnd - idxMultStart))*distMult + j))/(mergeStage*4) + 1;
+                        let curIterRev = (fadeStage*distMult-j)/(fadeStage*distMult);
+                        //let curRot = disc3rotMult*Math.PI*2.0*curIterRev;
+                        let curRot = disc2rotMult*Math.PI*2.0*((i-1)*distMult+(mergeStage-(7+(idxMultEnd-idxMultStart)))*distMult+j+1)/(mergeStage*distMult*2);
+                        let curOp = Math.pow(curIterRev,tpPow);
+                        discMaker(curRad, thickMult, curQual, (curDir*curZ)+bridgeZOff, img, curRpt, curRot,curOp);
+                        //console.log(curRot, curRpt, curOp);
+
+                    };
+                };
+            };
+            });
+
+        for(let j=0; j < blueStage*distMult; j++) {
+            let curZ = (((splitStage+mergeStage+fadeStage-3)*thickMult+disc4Off)*distMult) + (j*thickMult);
+            let curOp = Math.pow(j/(blueStage*distMult-1),tpPow);
+            let geom = new THREE.CylinderGeometry(curRad, curRad, thickMult, curQual, 1, true);
+            let curColor = colorArray[0][0];
+            let mat = new THREE.MeshPhongMaterial({color:curColor, reflectivity: 0.1, shininess: 100, transparent: true, opacity: curOp});
+            let mesh = new THREE.Mesh(geom, mat);
+            let rotAmt = 0;
+            mat.side = THREE.DoubleSide;
+            mesh.rotation.x += Math.PI*0.5;
+            mesh.position.z = (curDir*curZ)+bridgeZOff;
+            scene.add(mesh);
+            bridgeCyl.push(mesh);
+            bridgeRot.push(rotAmt);
+
+            };
+    };
+}
+
 
