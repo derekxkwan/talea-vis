@@ -1,12 +1,38 @@
+html, body {
+    background: #00263f;
+    font-family: Verdana, sans-serif;
+    text-align: center;
+    color: #fc7703;
+}
+
+#deets {
+    text-align: left;
+}
+
+#directions {
+    text-align: left;
+}
+
 #cnv {
     position: absolute;
+    z-index: 0;
+    left: 0;
+    top: 0;
+}
+
+a {
+        color: antiquewhite;
 }
 
 #infobox {
     position: absolute;
-    text-align: right;
+    text-align: left;
+    background:none;
+    left: 0;
+    top: 0;
+    z-index: 1;
     font-family: Verdana, sans-serif;
-    color: white;
+    color: #fc7703;
     width: 25%;
-    left:75%;
+    right:75%;
 }

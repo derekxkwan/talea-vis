@@ -1,24 +1,26 @@
-<!DOCTYPE html>
-
 <html>
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <link rel="stylesheet" href="main.css" />
-    <head>
-	
+    <title>talea</title>
+    <head>	
     </head>
-    <body style='margin: 0px; overflow: hidden'>
-	<canvas id="cnv"></canvas>
-    <div id="infobox">talea</div>
-    <script type="text/javascript"> let data = [0,0,0,0,0];</script>
-        <script src="./data/bridgedata.js" type="application/javascript"></script>
-        <script src="./data/bailliet_rev1.js" type="application/javascript"></script>
-        <script src="./data/bailliet_rev2.js" type="application/javascript"></script>
-        <script src="./data/bailliet_rev3.js" type="application/javascript"></script>
-        <script src="./data/bailliet_rev4.js" type="application/javascript"></script>
-        <script src="./data/bailliet_rev5.js" type="application/javascript"></script>
-        <script src="./data/bailliet_part2.js" type="application/javascript"></script>
-        <script src="./script.js" type="module"></script>
+    <body> 
+        <a href="model.html">view model</a> - <a href="details.html">model details</a><br>
+        <h1>model directions</h1>
+        <div id="directions">
+            <ul>
+                <li> <strong>left click and drag mouse</strong> to rotate the view</li>
+                <li> <strong>middle click and drag mouse</strong> to scroll the view</li>
+                <ul>
+                    <li> <strong>arrow keys</strong> can also scroll the view (active after any mouse click event)</li>
+                </ul>
+                <li> <strong>scroll up/down</strong> to zoom in/out</li>
+                <li> <strong>hover mouse pointer</strong> over different model parts to show brief details</li>
+                <ul>
+                    <li> <strong>left click on names</strong> of model parts in text info panel (or <strong>press the "space" key</strong>) to view more details in separate window</li>
+                </ul>
 
-
+            </ul>
+        </div>
     </body>
 </html>

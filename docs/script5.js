@@ -180,6 +180,40 @@ function makeSpiral(curDict, clrArr, param) {
     geom.clearGroups();
     //let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
     let stepSize = lenMult*qual*(radSeg*6); // because triangles i guess?
+    //console.log(stepSize,stepSize * totLen);
+    //console.log(eltDict, matArray); 
+    /*
+    for(let i = 0; i < (qual*radSeg*adjLen*3); i += stepSize) {
+        let idx = Math.floor(i/stepSize);
+        geom.addGroup(i, stepSize, idx % colorArray.length);
+    };
+    */
+    /*
+     * old forwards way
+    curDict["data"].forEach((curSec, i) => {
+        let curLen = curSec["qtr_len"];
+        let curIdx = curSec["qtr_index"];
+        let sprLen = getSpiralLen(curLen);
+        let sprIdx = getSpiralIdx(curIdx);
+        let curSubdiv = curSec["elt_subdiv"];
+        let curSubdivLen = Math.round(stepSize/curSubdiv);
+        let runIdx = sprIdx;
+        let eltLen = curSec["elts"].length;
+        //console.log(curIdx, curSubdivLen);
+        curSec["elts"].forEach((elt, j) => {
+            let curSublen = elt["len"];
+            let curLen2 = curSublen * curSubdivLen;
+            //let curSubidx = elt["subidx"];
+            let curType = elt["type"];
+            let curMat = colorArray[curType]["idx"];
+            //let curDir = elt["dir"];
+            if(j == (eltLen - 1)) curLen2 = (sprIdx + sprLen) - runIdx;
+            console.log(curMat, curLen2);
+            geom.addGroup(runIdx, curLen2, curMat);
+            runIdx += curLen2;
+        });
+    });
+    */
     // need to go backwards!
     //
     let matArray = [];
@@ -481,14 +515,13 @@ function getScene() {
     return [radius * Math.cos(theta), radius * Math.sin(theta), z];
   } 
 
-  function makeConicalSpiral(freq, radius, num, start, end, htscale) {
-    let arr = [];
-    for(let i = start; i < end; i ++) {
-        let cur = new THREE.Vector3(i * radius * Math.cos(freq * i) * overallScale, i * radius * Math.sin(freq * i) * overallScale, i*htscale * overallScale);
-        arr.push(cur);
-    };
+  function makeConicalSpiral(freq, radius, num, htscale) {
 
-      let curve = new THREE.CatmullRomCurve3(arr);
+       let cur_arr = Array.from({length: num}, (x,i) => 
+            new THREE.Vector3(i * radius * Math.cos(freq * i) * overallScale, i * radius * Math.sin(freq * i) * overallScale, i*htscale * overallScale)
+    );
+
+      let curve = new THREE.CatmullRomCurve3(cur_arr);
       //console.log(curve.points.length/lenMult);
       return curve;
       } 
@@ -747,6 +780,7 @@ function makeDiscs(bridgeZOff, thickMult, distMult) {
             };
     };
 }
+
 
 document.addEventListener('keyup', (e) => {
     //console.log(e.code);

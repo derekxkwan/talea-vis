@@ -43,7 +43,7 @@ function preload()
 }
 
 function drawGrid() {
-    let _n = -0.125*3.5;
+    let _n = -0.125*2;
     let _npts = 10000;
     let _radmult = 91*30;
     let prev = [0,0];

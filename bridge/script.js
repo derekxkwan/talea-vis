@@ -76,6 +76,7 @@ function discMaker2(curRad, height, curQual, zPos, curMat, txrRptTimes, rotAmt, 
     mesh.rotation.x += Math.PI*0.5;
     mesh.position.z = zPos;
     scene.add(mesh);
+    mesh.dataName = "bridge";
     bridgeCyl.push(mesh);
     bridgeRot.push(rotAmt);
 
@@ -95,6 +96,7 @@ function discMaker(curRad, height, curQual, zPos, img, txrRptTimes, rotAmt, curO
     mesh.rotation.x += Math.PI*0.5;
     mesh.position.z = zPos;
     scene.add(mesh);
+    mesh.dataName = "bridge";
     bridgeCyl.push(mesh);
     bridgeRot.push(rotAmt);
 
@@ -214,6 +216,7 @@ function makeDiscs(bridgeZOff, thickMult, distMult) {
             mesh.rotation.x += Math.PI*0.5;
             mesh.position.z = (curDir*curZ)+bridgeZOff;
             scene.add(mesh);
+            mesh.dataName = "bridge";
             bridgeCyl.push(mesh);
             bridgeRot.push(rotAmt);
 
