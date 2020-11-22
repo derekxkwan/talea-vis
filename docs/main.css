@@ -1,8 +1,8 @@
 html, body {
-    background: #00263f;
+    color: black;
     font-family: Verdana, sans-serif;
     text-align: center;
-    color: #fc7703;
+    background: #e6e9ff;
 }
 
 #deets {
@@ -21,18 +21,19 @@ html, body {
 }
 
 a {
-        color: antiquewhite;
+        color: #02ad6e;
+        text-decoration: none;
 }
 
 #infobox {
     position: absolute;
     text-align: left;
     background:none;
-    left: 0;
-    top: 0;
+    left: 10px;
+    top: 10px;
     z-index: 1;
     font-family: Verdana, sans-serif;
-    color: #fc7703;
+    color: black;
     width: 25%;
     right:75%;
 }
