@@ -11,6 +11,9 @@ project with Anne-Sophie Andersen to visualize Gérard Grisey's Talea three-dime
 
 ## docs
 - the main visualizer of talea using three.js
+- `model.html` is the model view
+- `index.html` is the landing page with directions
+- `details.html` is the details page with text by Anne-Sophie
 - `script.js` - the main three.js script
     - `script2.js`, `script3.js`, etc. are older versions of the script (2 being the oldest) that I keep around just in case (not the best way of doing version control when I'm using git, I know...)
 - the `data` folder has all the data of the spirals converted from csv using my script(s)   
