@@ -1,11 +1,11 @@
-﻿let dataText = {"cyl1": {
+﻿let dataText = {"end1": {
     "name": "Cylinder front"
     , "description": "Representation of part 1 as a <strong>contrast</strong> to part 2"
     , "dir": "clockwise"
     , "features": ["Background color: Bright yellow. Represents a loud, active texture.", "Colored strands. Represent a <strong>polyphonic</strong> texture with <strong>single</strong> harmonic fundamental", "Rank weeds. Represent sporadic melodies."]
     , "imag_tools": ['Increasing wavelength of colored strands: represents "range filter"', 'Grid with increasingly wide masks: represents ”microtonal filter”']
     }
-    , "cyl2": {
+    , "end2": {
         "name": "Cylinder back"
         , "description" : "Representation of part 2 as a <strong>contrast</strong> to part 1"
         , "dir": "top to bottom"
