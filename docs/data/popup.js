@@ -1,21 +1,21 @@
 ﻿let dataText = {"end1": {
-    "name": "Cylinder front"
+    "name": "Cylinder Front"
     , "description": "Representation of part 1 as a <strong>contrast</strong> to part 2"
     , "dir": "clockwise"
     , "features": ["Background color: Bright yellow. Represents a loud, active texture.", "Colored strands. Represent a <strong>polyphonic</strong> texture with <strong>single</strong> harmonic fundamental", "Rank weeds. Represent sporadic melodies."]
     , "imag_tools": ['Increasing wavelength of colored strands: represents "range filter"', 'Grid with increasingly wide masks: represents ”microtonal filter”']
     }
     , "end2": {
-        "name": "Cylinder back"
+        "name": "Cylinder Back"
         , "description" : "Representation of part 2 as a <strong>contrast</strong> to part 1"
         , "dir": "top to bottom"
         , "features": ["Background color: Muted purple. Represents quiet, static texture.", "Colored strands. Represent a <strong>monophonic</strong> texture with <strong>chromatically descending</strong> fundamentals.", "Rank weeds Represent sporadic melodies."]
     , "imag_tools": ['"Microscope". "Zooming in" on material', '"Frequency shifter". Distortion of harmony']
     }
    , "cyl": {
-       "name": "Cylinder side"
+       "name": "Cylinder Side"
        , "description": "Representation of transition from part 1 to part 2"
-       , "dir": "left to right"
+       , "dir": "Left to right"
        , "features": ["Yellow background becomes purple. Represents a shift from <strong>loud</strong> and <strong>active</strong> to <strong>quiet</strong> and <strong>static</strong> texture.", "Colored strands double. Represents a structural shift from <strong>polyphonic/monoharmonic</strong> to <strong>monophonic/polyharmonic</strong>."]
    }
     , "spr1": {
