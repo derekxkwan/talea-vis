@@ -36,12 +36,12 @@ let rotAmt = 0.001 * Math.PI;
 let qual = 5;
 let radSeg = 5;
 let lenMult = 6;
-let spiralZpos = (2*part1Len*lenMult*overallScale*htscale)+(bridgeLen*bridgeScale);
+let spiralZpos = (3.35*part1Len*lenMult*overallScale*htscale)+(bridgeLen*bridgeScale);
 let cylRadSeg = 32;
 let rad = 15 * overallScale*htscale;
-let cylRadInner = part1Len * 2 * lenMult * overallScale;
+let cylRadInner = part1Len * 2.5 * lenMult * overallScale;
 let cylRadThick = 2000 * overallScale;
-let cylDepth = part1Len * lenMult * 3 * overallScale*htscale, cylColor = 0xffea00;
+let cylDepth = part1Len * lenMult * 3.65 * overallScale*htscale, cylColor = 0xffea00;
 const renderer = getRenderer();
 let scene = getScene();
 let camera = getCamera();
@@ -63,24 +63,31 @@ let emisDict = {"nient": 0x656565, "pppp": 0x5a5a5a, "ppp": 0x505050,
 
 //let emisDict = {"nient": 0x
 let radArray = [1, 0.8, 0.6, 0.4, 0.2];
-let colorArray = [[0x001DFF, 0x8492FF],
-                [0xFE0218, 0xFD8893, 0xCC0202],
-                [0x00c354, 0x66c38e, 0x017031, 0x447559],
-                [0xff9500, 0xffcd86, 0xdd8100, 0xdcb276, 0x995a00],
+let colorArray = [
+                //[0x001DFF, 0x8492FF, 0x0016bd, 0x5e69bd, 0x000b5e, 0x2d3257],
+                [0x4000ff, 0xa385ff, 0x2d00b3, 0x6a53ad, 0x1f007a, 0x483875],     
+                [0xFE0218, 0xFD8893, 0xba0000, 0xc45e5e, 0x6e0000, 0x663333],
+                [0xff9500, 0xffcd86, 0xc27100, 0xb8915c, 0x784600, 0x6e5636],
+                [0x00c354, 0x66c38e, 0x008c3d, 0x41875f, 0x005927, 0x2f523e],
                 [0x03F1FE, 0xC1FCFF, 0x00B5C0, 0xA4D4D7, 0x00565B, 0xA6A6A6]
                 ];
 
-let colorArray2 =   [[0xfc03e8, 0xfc036b],
-                     [0xfc4e03, 0xf77c48, 0xb53802],
-                     [0xbafc03, 0xddfc86, 0x5a7a00, 0x7a855b],     
-                     [0x03fcad, 0x9dfcde, 0x00ba7f, 0x6bc9ab, 0x588275],
+let colorArray2 =   [[0xfc03e8, 0xff85f5, 0xb500a6, 0xad5ea7, 0x730069, 0x6e3d6a],
+                     [0xfc4e03, 0xff9d73, 0xa83200, 0xa3684e, 0x6e2100, 0x634437],
+                     [0xbafc03, 0xddfc86, 0x729c00, 0x809448, 0x3e5400, 0x49542a],     
+                     [0x03fcad, 0x9dfcde, 0x00ba7f, 0x6bc9ab, 0x007550, 0x356656],
                      [0x03bafc, 0xb8ecff, 0x0280ad, 0x97becc, 0x01455e, 0x9b9d9e]
+                    ];
+
+let colorArray3 = [[0x036bfc, 0x82b6ff, 0x0050bf, 0x6083b5, 0x003278, 0x324661],
+                    [0x031cfc, 0x8a95ff, 0x0011ad, 0x5b64b3, 0x000b73, 0x363a63]
                     ];
 
 let part2clrMap = { "bf": colorArray[0], "af": colorArray[1], "fs": colorArray[2],
                     "e": colorArray[3], "d": colorArray[4],
                     "a": colorArray2[0], "g": colorArray2[1], "f": colorArray2[2],
-                    "ef": colorArray2[3], "df": colorArray2[4]
+                    "ef": colorArray2[3], "df": colorArray2[4],
+                    "c": colorArray3[0], "b": colorArray3[1]
                     };
 
 
@@ -372,7 +379,7 @@ function makeTube(cylRad, depth, zPos) {
             let texture = new THREE.CanvasTexture(img);
             let mat = new THREE.MeshPhongMaterial({color:0xffffff,  map: texture, transparent: true, opacity: 0.75});
             mat.side = THREE.DoubleSide;
-            makeRing(cylRad-cylRadThick,cylRad+cylRadThick, depth/2 + zPos, mat, 0);
+            makeRing(cylRad-(1.5*cylRadThick),cylRad+cylRadThick, depth/2 + zPos, mat, 0);
         });
     let p2endLoader = new THREE.ImageLoader();
     p2endLoader.setCrossOrigin('*').load(p2endPath,
