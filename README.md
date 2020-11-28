@@ -32,7 +32,6 @@ project with Anne-Sophie Andersen to visualize Gérard Grisey's Talea three-dime
 
 ## bridge
 - a separate three.js scene for the bridge for now (Anne-Sophie analysis)
-- uses cutupcyl.mtl rendered by me in [blender](blender)
 
 ## bridge_tex
 - generates gradients for bridge textures
