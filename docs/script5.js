@@ -9,6 +9,7 @@ let p1endPath = "./res/part1.png";
 let p2endPath = "./res/part2.png";
 
 //bridgeStuff
+let initPos = new THREE.Vector3(4812,150, 2670);
 let bridgeCyl = [];
 let bridgeRot = [];
 let bridgeRotScale = 0.005;
@@ -432,12 +433,14 @@ function getSpiralIdx(stepSize,idx) {
 }   
 
 function initControls(camera) {
+    let camZtarget = spiralZpos+zOff-(0.5*bridgeLen*bridgeScale);
     let curCtrls = new OrbitControls(camera, renderer.domElement);
     //curCtrls.addEventListener('change', render);
     //curCtrls.target.set(0,20,100);
     curCtrls.target.set(0,0, 0);
     curCtrls.enableKeys = true;
     //curCtrls.minDistance = 10;
+      curCtrls.target.set(0,0,camZtarget);
     //curCtrls.maxDistance = 100;
     curCtrls.update();
     return curCtrls;
@@ -450,37 +453,39 @@ function getScene() {
   }
 
   function getCamera() {
-    var aspectRatio = window.innerWidth / window.innerHeight;
-    var camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 999999);
+    let camZpos = spiralZpos+zOff-(bridgeLen*bridgeScale);
+    let aspectRatio = window.innerWidth / window.innerHeight;
+    let camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 999999);
     //camera.position.set(0, 1, -10);
-      //camera.position.set(0, 0, 50);
-      camera.position.set(5000,0,spiralZpos + (100*lenMult));
-
+      camera.position.set(initPos.x, initPos.y, initPos.z);
+      //camera.lookAt(0,0,spiralZpos);
+      //camera.lookAt(0,0,-spiralZpos);
+       // camera.position.set(0,0,zOff+(spiralZpos - (3000*overallScale*lenMult)));
     return camera;
   }
 
   function getLight(scene) {
     let intensity1 = 0.85;
-    let intensity2 = 0.85;
+    let intensity2 = 0.5;
     //let intensity1 = 0.85;
     let intensity3 = 0.85;
     //let intensity2 = 0.85;
     let lightDist = 0;
+    let zPos1 = spiralZpos + zOff+ (5000*overallScale*lenMult);
+    let zPos2 = zOff-1*(spiralZpos + (3000*overallScale*lenMult))
     let light1 = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
-    light1.position.set(5000, 5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
+    light1.position.set(0, 3000,zPos1);
     scene.add(light1);
     
     let light1a = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
-    light1a.position.set(-5000, -5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
-    scene.add(light1a);
-    
+    light1a.position.set(0, -3000, zPos1);
 
     let light2 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
-    light2.position.set(5000, 5000, zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
+    light2.position.set(0, 3000, zPos2);
     scene.add(light2);
 
     let light2a = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
-    light2a.position.set(-5000, -5000,zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
+    light2a.position.set(0, -3000,zPos2);
     scene.add(light2a);
 
 
@@ -791,9 +796,12 @@ function makeDiscs(bridgeZOff, thickMult, distMult) {
 
 
 document.addEventListener('keyup', (e) => {
-    //console.log(e.code);
+    console.log(e.code);
     if(e.code == "Space" && typeof curModelName !== "undefined") {
         let curUrl = "details.html#" + curModelName;
         window.open(curUrl);
+    }
+    else if(e.code == "KeyC") {
+        console.log(camera.position);
     }
 });

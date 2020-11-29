@@ -25,6 +25,31 @@ a {
         text-decoration: none;
 }
 
+.regimg {
+    border: none;
+    width:100%;
+}
+
+.textlinks {
+    text-align: center;
+}
+
+.imgrow {
+    text-align:center;
+}  
+
+#modellinks {
+    position: absolute;
+    text-align: right;
+    background:none;
+    right: 10px;
+    top: 10px;
+    z-index: 1;
+    font-family: Verdana, sans-serif;
+    color: black;
+    width: 25%;
+    left:75&;
+}
 #infobox {
     position: absolute;
     text-align: left;
