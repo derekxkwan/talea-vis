@@ -9,6 +9,7 @@ let p1endPath = "./res/part1.png";
 let p2endPath = "./res/part2.png";
 
 //bridgeStuff
+let initPos = new THREE.Vector3(4812,150, 2670);
 let bridgeCyl = [];
 let bridgeRot = [];
 let bridgeRotScale = 0.005;
@@ -28,20 +29,21 @@ let bridgeScale = 5 * overallScale;
 let base_bpm = 80;
 //let bg = 0xf9f9f9;
 //let bg = 0x00263f;
+let bg = 0xe6e9ff;
 let part1Len = data[0]["total_len"];
+let part1Lens = Array.from(data, (x) => x["total_len"]);
 let rotAmt = 0.001 * Math.PI;
 //let bg = 0xffffff;
 //let bg = 0x000000;
-let bg = 0xe6e9ff;
 let qual = 5;
 let radSeg = 5;
 let lenMult = 6;
-let spiralZpos = (2*part1Len*lenMult*overallScale*htscale)+(bridgeLen*bridgeScale);
+let spiralZpos = (3.35*part1Len*lenMult*overallScale*htscale)+(bridgeLen*bridgeScale);
 let cylRadSeg = 32;
 let rad = 15 * overallScale*htscale;
-let cylRadInner = part1Len * 2 * lenMult * overallScale;
+let cylRadInner = part1Len * 2.5 * lenMult * overallScale;
 let cylRadThick = 2000 * overallScale;
-let cylDepth = part1Len * lenMult * 3 * overallScale*htscale, cylColor = 0xffea00;
+let cylDepth = part1Len * lenMult * 3.65 * overallScale*htscale, cylColor = 0xffea00;
 const renderer = getRenderer();
 let scene = getScene();
 let camera = getCamera();
@@ -63,24 +65,31 @@ let emisDict = {"nient": 0x656565, "pppp": 0x5a5a5a, "ppp": 0x505050,
 
 //let emisDict = {"nient": 0x
 let radArray = [1, 0.8, 0.6, 0.4, 0.2];
-let colorArray = [[0x001DFF, 0x8492FF],
-                [0xFE0218, 0xFD8893, 0xCC0202],
-                [0x00c354, 0x66c38e, 0x017031, 0x447559],
-                [0xff9500, 0xffcd86, 0xdd8100, 0xdcb276, 0x995a00],
+let colorArray = [
+                //[0x001DFF, 0x8492FF, 0x0016bd, 0x5e69bd, 0x000b5e, 0x2d3257],
+                [0x4000ff, 0xa385ff, 0x2d00b3, 0x6a53ad, 0x1f007a, 0x483875],     
+                [0xFE0218, 0xFD8893, 0xba0000, 0xc45e5e, 0x6e0000, 0x663333],
+                [0xff9500, 0xffcd86, 0xc27100, 0xb8915c, 0x784600, 0x6e5636],
+                [0x00c354, 0x66c38e, 0x008c3d, 0x41875f, 0x005927, 0x2f523e],
                 [0x03F1FE, 0xC1FCFF, 0x00B5C0, 0xA4D4D7, 0x00565B, 0xA6A6A6]
                 ];
 
-let colorArray2 =   [[0xfc03e8, 0xfc036b],
-                     [0xfc4e03, 0xf77c48, 0xb53802],
-                     [0xbafc03, 0xddfc86, 0x5a7a00, 0x7a855b],     
-                     [0x03fcad, 0x9dfcde, 0x00ba7f, 0x6bc9ab, 0x588275],
+let colorArray2 =   [[0xfc03e8, 0xff85f5, 0xb500a6, 0xad5ea7, 0x730069, 0x6e3d6a],
+                     [0xfc4e03, 0xff9d73, 0xa83200, 0xa3684e, 0x6e2100, 0x634437],
+                     [0xbafc03, 0xddfc86, 0x729c00, 0x809448, 0x3e5400, 0x49542a],     
+                     [0x03fcad, 0x9dfcde, 0x00ba7f, 0x6bc9ab, 0x007550, 0x356656],
                      [0x03bafc, 0xb8ecff, 0x0280ad, 0x97becc, 0x01455e, 0x9b9d9e]
+                    ];
+
+let colorArray3 = [[0x036bfc, 0x82b6ff, 0x0050bf, 0x6083b5, 0x003278, 0x324661],
+                    [0x031cfc, 0x8a95ff, 0x0011ad, 0x5b64b3, 0x000b73, 0x363a63]
                     ];
 
 let part2clrMap = { "bf": colorArray[0], "af": colorArray[1], "fs": colorArray[2],
                     "e": colorArray[3], "d": colorArray[4],
                     "a": colorArray2[0], "g": colorArray2[1], "f": colorArray2[2],
-                    "ef": colorArray2[3], "df": colorArray2[4]
+                    "ef": colorArray2[3], "df": colorArray2[4],
+                    "c": colorArray3[0], "b": colorArray3[1]
                     };
 
 
@@ -97,7 +106,7 @@ let matDict = {"a": {"shininess": 100, "reflectivity": 1, "opacity": 1, "transpa
 document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
 
-let spr = Array.from({length: data.length}, (x,i) => makeSpiral(data[i], colorArray[i], radArray[i]));
+let spr = Array.from({length: data.length}, (x,i) => makeSpiral(i));
 
 //parsePart2Data(1);
 //console.log(data2["tot_dur"]*lenMult);
@@ -167,74 +176,87 @@ function makeMatArray(clrArr)
 
 
 
-function makeSpiral(curDict, clrArr, param) {
+function makeSpiral(idx) {
+    let meshArr = [];
+    let curDict = data[idx];
+    let clrArr = colorArray[idx];
+    let param = radArray[idx];
     let totLen = curDict["total_len"];
     let adjLen = totLen * lenMult;
     let tubLen = adjLen * qual;
-    let curve = makeConicalSpiral(mu,param,adjLen,htscale);
     let secIdxAdj = part1Len - totLen //because i coded qtr_index against overall part 1 length so I need to adjust
-    //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
-    //let curve = makeConchospiral(1.065,0.5, 1.3, adjLen);
-    let geom = new THREE.TubeBufferGeometry(curve, tubLen, rad, radSeg, false);
-    //geom.index = true;
-    //console.log(geom.index);
-    geom.clearGroups();
-    //let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
-    let stepSize = lenMult*qual*(radSeg*6); // because triangles i guess?
+        let stepSize = lenMult*qual*(radSeg*6); // because triangles i guess?
+
+    let accumLens = Array.from({length: part1Lens.length}, () => 0);
+    let accumLen = 0;
+    for(let i = part1Lens.length - 1; i >= 0; i++) {
+        accumLens[i] = accumLen;
+        accumLen += part1Lens[i];
+    };
+
+    let dataIdx = 0;
     // need to go backwards!
-    //
-    let matArray = [];
-    let curMatIdx = 0;
-     curDict["data"].forEach((curSec, i) => {
-        let curLen = curSec["qtr_len"];
-        let curIdx = curSec["qtr_index"] - secIdxAdj;
-        let adjIdx = totLen - curIdx;
-        let sprLen = getSpiralLen(stepSize,curLen);
-        let sprIdx = getSpiralIdx(stepSize,adjIdx);
-        let curSubdiv = curSec["elt_subdiv"];
-        //let curSubdivLen = Math.round(stepSize/curSubdiv);
-        let curSubdivLen = stepSize/curSubdiv;
-        let runIdx = sprIdx;
-        let eltLen = curSec["elts"].length;
-        //console.log("newsec", totLen, curIdx, sprIdx, curSubdivLen);
-        let lastDyn = "";
-        curSec["elts"].forEach((elt, j) => {
-            let curSublen = elt["len"];
-            let curType = elt["type"];
-            if(curSublen > 0 && curType != "none") {
-                let curLen2 = Math.round(curSublen * curSubdivLen);
-                let curIdx = runIdx - curLen2;
-                //let curSubidx = elt["subidx"];
-                let curDyn = elt["dyn"];
-                if(curDyn == "-") {
-                    curDyn = lastDyn;
+    for(let i = idx; i < part1Lens.length; i++)
+    {
+        let curStart = accumLens[i]*lenMult*qual;
+        let curEnd = accumLen * lenMUlt * qual;
+        let curve = makeConicalSpiral(mu,param,adjLen, curStart, curEnd, htscale);
+        let geom = new THREE.TubeBufferGeometry(curve, tubLen, rad, radSeg, false);
+        let matArray = [];
+        let curMatIdx = 0;
+        geom.clearGroups();
+        accumLen -= accumLens[i];
+                    let curSec = curDict["data"][dataIdx];
+            let curLen = curSec["qtr_len"];
+            let curIdx = curSec["qtr_index"] - secIdxAdj;
+            let adjIdx = totLen - curIdx;
+            let sprLen = getSpiralLen(stepSize,curLen);
+            let sprIdx = getSpiralIdx(stepSize,adjIdx);
+            let curSubdiv = curSec["elt_subdiv"];
+            //let curSubdivLen = Math.round(stepSize/curSubdiv);
+            let curSubdivLen = stepSize/curSubdiv;
+            let runIdx = sprIdx;
+            let eltLen = curSec["elts"].length;
+            //console.log("newsec", totLen, curIdx, sprIdx, curSubdivLen);
+            let lastDyn = "";
+            curSec["elts"].forEach((elt, j) => {
+                let curSublen = elt["len"];
+                let curType = elt["type"];
+                if(curSublen > 0 && curType != "none") {
+                    let curLen2 = Math.round(curSublen * curSubdivLen);
+                    let curIdx = runIdx - curLen2;
+                    //let curSubidx = elt["subidx"];
+                    let curDyn = elt["dyn"];
+                    if(curDyn == "-") {
+                        curDyn = lastDyn;
+                    };
+                    let curMat = makeMat(curType, clrArr, curDyn); 
+                    //let matIdx = eltDict[curType];
+                    //let curDir = elt["dir"];
+                    if(j == (eltLen - 1)) {
+                        curIdx = sprIdx - sprLen;
+                        curLen2 = runIdx - curIdx;
+                    };
+                    //console.log("qtrsec", curIdx, curLen2, curMat);
+                    //console.log(curIdx, curLen2);
+                    geom.addGroup(curIdx, curLen2, curMatIdx);
+                    matArray.push(curMat);
+                    curMatIdx += 1;
+                    lastDyn = curDyn;
+                    //geom.addGroup(curIdx, curLen2, 0);
+                    runIdx = curIdx;
                 };
-                let curMat = makeMat(curType, clrArr, curDyn); 
-                //let matIdx = eltDict[curType];
-                //let curDir = elt["dir"];
-                if(j == (eltLen - 1)) {
-                    curIdx = sprIdx - sprLen;
-                    curLen2 = runIdx - curIdx;
-                };
-                //console.log("qtrsec", curIdx, curLen2, curMat);
-                //console.log(curIdx, curLen2);
-                geom.addGroup(curIdx, curLen2, curMatIdx);
-                matArray.push(curMat);
-                curMatIdx += 1;
-                lastDyn = curDyn;
-                //geom.addGroup(curIdx, curLen2, 0);
-                runIdx = curIdx;
-            };
-        });
-    });
-    //console.log(geom.vertices);
-    //console.log(geom.parameters);
-    //tubularsegments = totlen * lenmult * radial segments * radius
-    let mesh = new THREE.Mesh(geom, matArray);
-    mesh.position.z += spiralZpos + zOff;
-    mesh.dataName = "spr1";
-    scene.add(mesh);
-    return mesh;
+            });
+            //console.log(geom.vertices);
+            //console.log(geom.parameters);
+            //tubularsegments = totlen * lenmult * radial segments * radius
+            let mesh = new THREE.Mesh(geom, matArray);
+            mesh.position.z += spiralZpos + zOff;
+            mesh.dataName = "spr1";
+            scene.add(mesh);
+            meshArr.push(mesh);
+    };
+    return meshArr;
 }
 
 function makeSpiral2(curRadius) {
@@ -244,7 +266,7 @@ function makeSpiral2(curRadius) {
     let adjLen = totLen;
     console.log(totLen);
     let tubLen = adjLen * qual;
-    let curve = makeConicalSpiral(mu,curRadius, adjLen,htscale);
+    let curve = makeConicalSpiral(mu,curRadius, adjLen, 0 , adjLen, htscale);
     //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
     //let curve = makeConchospiral(1.065,0.5, 1.3, adjLen);
     let geom = new THREE.TubeBufferGeometry(curve, tubLen, rad, radSeg, false);
@@ -338,7 +360,7 @@ function makeTube(cylRad, depth, zPos) {
             let texture = new THREE.CanvasTexture(img);
             let mat = new THREE.MeshPhongMaterial({color:0xffffff,  map: texture, transparent: true, opacity: 0.75});
             mat.side = THREE.DoubleSide;
-            makeRing(cylRad-cylRadThick,cylRad+cylRadThick, depth/2 + zPos, mat, 0);
+            makeRing(cylRad-(1.5*cylRadThick),cylRad+cylRadThick, depth/2 + zPos, mat, 0);
         });
     let p2endLoader = new THREE.ImageLoader();
     p2endLoader.setCrossOrigin('*').load(p2endPath,
@@ -391,12 +413,14 @@ function getSpiralIdx(stepSize,idx) {
 }   
 
 function initControls(camera) {
+    let camZtarget = spiralZpos+zOff-(0.5*bridgeLen*bridgeScale);
     let curCtrls = new OrbitControls(camera, renderer.domElement);
     //curCtrls.addEventListener('change', render);
     //curCtrls.target.set(0,20,100);
     curCtrls.target.set(0,0, 0);
     curCtrls.enableKeys = true;
     //curCtrls.minDistance = 10;
+      curCtrls.target.set(0,0,camZtarget);
     //curCtrls.maxDistance = 100;
     curCtrls.update();
     return curCtrls;
@@ -409,37 +433,39 @@ function getScene() {
   }
 
   function getCamera() {
-    var aspectRatio = window.innerWidth / window.innerHeight;
-    var camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 999999);
+    let camZpos = spiralZpos+zOff-(bridgeLen*bridgeScale);
+    let aspectRatio = window.innerWidth / window.innerHeight;
+    let camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 999999);
     //camera.position.set(0, 1, -10);
-      //camera.position.set(0, 0, 50);
-      camera.position.set(5000,0,spiralZpos + (100*lenMult));
-
+      camera.position.set(initPos.x, initPos.y, initPos.z);
+      //camera.lookAt(0,0,spiralZpos);
+      //camera.lookAt(0,0,-spiralZpos);
+       // camera.position.set(0,0,zOff+(spiralZpos - (3000*overallScale*lenMult)));
     return camera;
   }
 
   function getLight(scene) {
     let intensity1 = 0.85;
-    let intensity2 = 0.85;
+    let intensity2 = 0.5;
     //let intensity1 = 0.85;
     let intensity3 = 0.85;
     //let intensity2 = 0.85;
     let lightDist = 0;
+    let zPos1 = spiralZpos + zOff+ (5000*overallScale*lenMult);
+    let zPos2 = zOff-1*(spiralZpos + (3000*overallScale*lenMult))
     let light1 = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
-    light1.position.set(5000, 5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
+    light1.position.set(0, 3000,zPos1);
     scene.add(light1);
     
     let light1a = new THREE.PointLight(0xf0f0f0, intensity1, lightDist, 1);
-    light1a.position.set(-5000, -5000,spiralZpos + zOff+ (3000*overallScale*lenMult));
-    scene.add(light1a);
-    
+    light1a.position.set(0, -3000, zPos1);
 
     let light2 = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
-    light2.position.set(5000, 5000, zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
+    light2.position.set(0, 3000, zPos2);
     scene.add(light2);
 
     let light2a = new THREE.PointLight(0xf0f0f0, intensity2, lightDist, 1);
-    light2a.position.set(-5000, -5000,zOff-1*(spiralZpos + (3000*overallScale*lenMult)));
+    light2a.position.set(0, -3000,zPos2);
     scene.add(light2a);
 
 
@@ -483,13 +509,19 @@ function getScene() {
   } 
 
   function makeConicalSpiral(freq, radius, num, start, end, htscale) {
-    let arr = [];
-    for(let i = start; i < end; i ++) {
-        let cur = new THREE.Vector3(i * radius * Math.cos(freq * i) * overallScale, i * radius * Math.sin(freq * i) * overallScale, i*htscale * overallScale);
-        arr.push(cur);
+
+    let curArr = [];
+    for(let i =0 ; i < num; i++) {
+        let cx = i * radius * Math.cos(freq * i) * overallScale;
+        let cy = i * radius * Math.sin(freq * i) * overallScale;
+        let cz = i*htscale * overallScale;
+        if(i >= start && i < end) {
+            let cvec = new THREE.Vector3(cx, cy, cz);
+            curArr.push(cvec);
+        };
     };
 
-      let curve = new THREE.CatmullRomCurve3(arr);
+      let curve = new THREE.CatmullRomCurve3(curArr);
       //console.log(curve.points.length/lenMult);
       return curve;
       } 
@@ -503,6 +535,7 @@ function makeConchospiral(mu, a, c, num) {
       let curve = new THREE.CatmullRomCurve3(cur_arr);
       return curve;
 } 
+
 
 function parsePart2Data() {
     let cur = data2["data"];
@@ -749,10 +782,14 @@ function makeDiscs(bridgeZOff, thickMult, distMult) {
     };
 }
 
+
 document.addEventListener('keyup', (e) => {
-    //console.log(e.code);
+    console.log(e.code);
     if(e.code == "Space" && typeof curModelName !== "undefined") {
         let curUrl = "details.html#" + curModelName;
         window.open(curUrl);
+    }
+    else if(e.code == "KeyC") {
+        console.log(camera.position);
     }
 });

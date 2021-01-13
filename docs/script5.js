@@ -189,40 +189,6 @@ function makeSpiral(curDict, clrArr, param) {
     geom.clearGroups();
     //let stepSize = qual*radSeg*3*lenMult; // because triangles i guess?
     let stepSize = lenMult*qual*(radSeg*6); // because triangles i guess?
-    //console.log(stepSize,stepSize * totLen);
-    //console.log(eltDict, matArray); 
-    /*
-    for(let i = 0; i < (qual*radSeg*adjLen*3); i += stepSize) {
-        let idx = Math.floor(i/stepSize);
-        geom.addGroup(i, stepSize, idx % colorArray.length);
-    };
-    */
-    /*
-     * old forwards way
-    curDict["data"].forEach((curSec, i) => {
-        let curLen = curSec["qtr_len"];
-        let curIdx = curSec["qtr_index"];
-        let sprLen = getSpiralLen(curLen);
-        let sprIdx = getSpiralIdx(curIdx);
-        let curSubdiv = curSec["elt_subdiv"];
-        let curSubdivLen = Math.round(stepSize/curSubdiv);
-        let runIdx = sprIdx;
-        let eltLen = curSec["elts"].length;
-        //console.log(curIdx, curSubdivLen);
-        curSec["elts"].forEach((elt, j) => {
-            let curSublen = elt["len"];
-            let curLen2 = curSublen * curSubdivLen;
-            //let curSubidx = elt["subidx"];
-            let curType = elt["type"];
-            let curMat = colorArray[curType]["idx"];
-            //let curDir = elt["dir"];
-            if(j == (eltLen - 1)) curLen2 = (sprIdx + sprLen) - runIdx;
-            console.log(curMat, curLen2);
-            geom.addGroup(runIdx, curLen2, curMat);
-            runIdx += curLen2;
-        });
-    });
-    */
     // need to go backwards!
     //
     let matArray = [];
