@@ -14,7 +14,7 @@ let bridgeCyl = [];
 let bridgeRot = [];
 let bridgeRotScale = 0.005;
 let bridgeLenMult = 3;
-let discPaths = ['res/disc0.0.png', 'res/disc0.125.png', 'res/disc0.25.png', 'res/disc0.375.png', 'res/disc0.5.png', 'res/disc0.625.png', 'res/disc0.75.png', 'res/disc0.875.png', 'res/disc1.0.png'];
+let discPaths = ['./res/disc0.0.png', './res/disc0.125.png', './res/disc0.25.png', './res/disc0.375.png', './res/disc0.5.png', './res/disc0.625.png', './res/disc0.75.png', './res/disc0.875.png', './res/disc1.0.png'];
 
 let bridgeLen = datab["data"]["total_len"]*bridgeLenMult;
 //-----------------
@@ -115,6 +115,7 @@ let cyl1 = makeTube(cylRadInner, cylDepth, spiralZpos*0.75+zOff);
 
 
 makeDiscs(spiralZpos-(bridgeLen*bridgeLenMult*0), bridgeScale, bridgeLenMult*2);
+//makeDiscs(spiralZpos-(bridgeLen*bridgeLenMult*0), 1, bridgeLenMult*2);
 render();
 
 
@@ -640,7 +641,7 @@ function discMaker(curRad, height, curQual, zPos, img, txrRptTimes, rotAmt, curO
 
 //curZ, curRpt, curRot
 function mergeStageCoords(texidx, numidx, splitStage, mergeStage, thickMult, distMult, disc2Off, disc2rotMult) {
-    let curZ = ((splitStage+((texidx-1)*thickMult)+disc2Off)*distMult)+(numidx*thickMult);
+    let curZ = ((splitStage*thickMult+((texidx-1)*thickMult)+disc2Off)*distMult)+(numidx*thickMult);
     let curRpt = (((texidx-1)*distMult) + numidx)/(mergeStage*4) + 1;
     let curRot = disc2rotMult*Math.PI*2.0*((texidx-1)*distMult+numidx+1)/(mergeStage*distMult*2);
     //let curRot = 0;
@@ -663,7 +664,7 @@ function makeDiscs(bridgeZOff, thickMult, distMult) {
         let disc2Off = 0;
         let disc3Off = 0;
         let disc4Off = 0;
-        let curQual = 7;
+        let curQual = 12;
         let curRad = 30*thickMult;
         let tpPow = 3;
         let curDir = -1;
@@ -743,6 +744,7 @@ function makeDiscs(bridgeZOff, thickMult, distMult) {
         for(let j=0; j < blueStage*distMult; j++) {
             let curZ = (((splitStage+mergeStage+fadeStage-3)*thickMult+disc4Off)*distMult) + (j*thickMult);
             let curOp = Math.pow(j/(blueStage*distMult-1),tpPow);
+            //console.log(j, curOp);
             let geom = new THREE.CylinderGeometry(curRad, curRad, thickMult, curQual, 1, true);
             let curColor = colorArray[0][0];
             let mat = new THREE.MeshPhongMaterial({color:curColor, reflectivity: 0.1, shininess: 100, transparent: true, opacity: curOp});

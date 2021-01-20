@@ -34,7 +34,6 @@ let controls = initControls(camera);
 let bridgeCyl = [];
 let bridgeRot = [];
 let bridgeRotScale = 0.005;
-let zOff = 0;
 let thickMult = 1;
 let distMult = 3;
 
