@@ -9,6 +9,7 @@ let p1endPath = "./res/part1.png";
 let p2endPath = "./res/part2.png";
 
 //bridgeStuff
+let selName;
 let initPos = new THREE.Vector3(4812,150, 2670);
 let bridgeCyl = [];
 let bridgeRot = [];
@@ -251,7 +252,7 @@ function makeSpiral2(curRadius) {
     let cur = data2["data"];
     let totLen = data2["tot_dur"];
     let adjLen = totLen;
-    console.log(totLen);
+    //console.log(totLen);
     let tubLen = adjLen * qual;
     let curve = makeConicalSpiral(mu,curRadius, adjLen,htscale);
     //let curve = makeConchospiral(1.065, 0.5, 1.1, adjLen);
@@ -526,7 +527,7 @@ function parsePart2Data() {
         let scaled_dur = Math.round((1.0/scaled_bpm)*cur_dur*lenMult);
         data2["data"][i]["scaled_bpm"] = scaled_bpm;
         data2["data"][i]["scaled_dur"] = scaled_dur;
-        console.log(scaled_dur, cml_dur);
+        //console.log(scaled_dur, cml_dur);
         cml_dur += scaled_dur;
     };
     data2["tot_dur"] = cml_dur;
@@ -578,6 +579,7 @@ function animate()
             let curName = intersected.dataName;
             let curText = formatText(curName);
             let infobox = document.getElementById("infobox");
+            selName = curName;
             infobox.innerHTML = curText;
             curModelName = curName;
         };
@@ -764,12 +766,65 @@ function makeDiscs(bridgeZOff, thickMult, distMult) {
 
 
 document.addEventListener('keyup', (e) => {
-    console.log(e.code);
+    //console.log(e.code);
     if(e.code == "Space" && typeof curModelName !== "undefined") {
         let curUrl = "details.html#" + curModelName;
         window.open(curUrl);
     }
+    else if(e.code == "KeyP") {
+        //console.log(selName);
+        playHandler();
+
+    }
     else if(e.code == "KeyC") {
         console.log(camera.position);
     }
+});
+
+//== PLAYER STUFF =================================
+
+let p_times = {"beg_p1": 69,  "beg_bridge": 129, "beg_p2": 200};
+let iframe = document.querySelector('iframe');
+let player = new Vimeo.Player(iframe);
+let playing = false;
+player.setVolume(1).then(() => {}).catch((e) => {});
+
+
+function playHandler() {
+    let cur = selName;
+    let is_playing = playing;
+    if(is_playing == false) {
+        seekAndPlay(cur);
+        playing = true;
+    }
+    else {
+        playerPause();
+        playing = false;
+    }
+
+}
+
+function playerPause() {
+
+        player.pause().then(() => {}).catch((e) => {});
+}
+
+function seekAndPlay(cur) {
+    let toSet = -1;
+    if(cur == "end1" || cur == "spr1" || cur == "cyl") {
+       toSet = p_times["beg_p1"];
+    }
+    else if(cur == "spr2" || cur == "end2") {
+       toSet = p_times["beg_p2"];
+    }
+    else if(cur == "bridge") {
+       toSet = p_times["beg_bridge"];
+    }
+    if(toSet > 0) {
+        player.setCurrentTime(toSet).then((sec) => {}).catch((e) => {});
+        player.play().then(() => {}).catch((e) => {});
+    };
+}
+player.on('play', () => {
+    //console.log('play');
 });

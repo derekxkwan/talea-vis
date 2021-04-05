@@ -5,6 +5,13 @@ html, body {
     background: #e6e9ff;
 }
 
+#talpanel {
+    display: none;
+}
+
+#credits {
+    text-align: left;
+}
 #deets {
     text-align: left;
 }

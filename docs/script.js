@@ -793,3 +793,26 @@ document.addEventListener('keyup', (e) => {
         console.log(camera.position);
     }
 });
+
+//== PLAYER STUFF =================================
+
+let player;
+let sndRdy = false;
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+        events: {
+            'onStageChange': stChg,
+            'onReady': plyRdy
+        }
+    });
+}
+
+function plyRdy() {
+    sndRdy = true;
+    console.log(sndRdy);
+
+}
+
+function stChg() {
+
+}
