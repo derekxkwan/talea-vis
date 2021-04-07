@@ -1,8 +1,8 @@
 html, body {
-    color: black;
+    color: #ffe099;
     font-family: Verdana, sans-serif;
     text-align: center;
-    background: #e6e9ff;
+    background: #00263d;
 }
 
 #talpanel {
@@ -20,6 +20,15 @@ html, body {
     text-align: left;
 }
 
+.textpanel,.detailtitle {
+
+    border: 1px solid #cf1f74;
+    background: #781645;
+}
+
+.detailtitle {
+    padding: 5px;
+}
 #cnv {
     position: absolute;
     z-index: 0;
@@ -28,7 +37,7 @@ html, body {
 }
 
 a {
-        color: #02ad6e;
+        color: #3bff83;
         text-decoration: none;
 }
 
@@ -53,19 +62,42 @@ a {
     top: 10px;
     z-index: 1;
     font-family: Verdana, sans-serif;
-    color: black;
     width: 25%;
-    left:75&;
+    left:75%;
 }
-#infobox {
+#infobg {
+    --bg-color: #00263d;
+}
+.infostuff {
+    padding: 15px 50px 15px 15px;
     position: absolute;
     text-align: left;
-    background:none;
+    font-size:1.2em;
     left: 10px;
-    top: 10px;
-    z-index: 1;
-    font-family: Verdana, sans-serif;
-    color: black;
-    width: 25%;
+    top: 5px;
+    width: 300px;
     right:75%;
+}
+
+#infobox {
+    z-index: 2;
+    background: none;
+}
+#infobg{
+    opacity:0.5;
+    background: var(--bg-color);
+    color: var(--bg-color);
+    z-index: 1;
+}
+
+
+#infobox {
+    --outline-color: rgba(0,0,0,0.1);
+}
+#infobox {
+	text-shadow:
+		-1px -1px 0 var(--outline-color),
+		1px -1px 0 var(--outline-color),
+		-1px 1px 0 var(--outline-color),
+		1px 1px 0 var(--outline-color);
 }

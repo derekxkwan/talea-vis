@@ -28,9 +28,8 @@ let mu = 201;
 let overallScale = 0.1;
 let bridgeScale = 5 * overallScale;
 let base_bpm = 80;
-//let bg = 0xf9f9f9;
-//let bg = 0x00263f;
-let bg = 0xe6e9ff;
+//let bg = 0xe6e9ff;
+let bg = 0x00263d;
 let part1Len = data[0]["total_len"];
 let rotAmt = 0.001 * Math.PI;
 //let bg = 0xffffff;
@@ -541,7 +540,7 @@ function parsePart2Data() {
 function formatText(curName) {
     let curStr = "";
     let cur = dataText[curName];
-    curStr += "<a href='details.html#" + curName + "' target='_blank'><h1>" + cur["name"] + "</h1></a>";
+    curStr += "<a href='details.html#" + curName + "' target='_blank'><h2>" + cur["name"] + "</h2></a>";
     curStr += "<h2>Description</h2>";
     curStr += cur["description"];
     if("dir" in cur) {
@@ -563,6 +562,8 @@ function formatText(curName) {
         curStr += "</ul>";
     };
     curStr += "</ul>";
+    //curStr += "<div id='infobg'>";
+    //curStr += "</div>";
     return curStr;
 
 }   
@@ -579,8 +580,10 @@ function animate()
             let curName = intersected.dataName;
             let curText = formatText(curName);
             let infobox = document.getElementById("infobox");
+            let infobg = document.getElementById("infobg");
             selName = curName;
             infobox.innerHTML = curText;
+            infobg.innerHTML = curText;
             curModelName = curName;
         };
         lastIntersect = intersected;
@@ -784,22 +787,32 @@ document.addEventListener('keyup', (e) => {
 //== PLAYER STUFF =================================
 
 let p_times = {"beg_p1": 22,  "beg_bridge": 305, "beg_p2": 353};
+let p_cue = {"beg_p1": 304.5, "beg_bridge":352.5};
 let iframe = document.querySelector('iframe');
 let player = new Vimeo.Player(iframe);
 let playing = false;
+let playind = document.getElementById("playind");
 player.setVolume(1).then(() => {}).catch((e) => {});
 
+Object.entries(p_cue).forEach( ([k,v]) => {
+    player.addCuePoint(v, {}).then( (id) => {} ).catch ( (e) => {});
+});
+
+player.on('cuepoint', (data) => { 
+    let is_playing = playing;
+    if(is_playing ==  true) {
+        playerPause();
+    };
+});
 
 function playHandler() {
     let cur = selName;
     let is_playing = playing;
     if(is_playing == false) {
         seekAndPlay(cur);
-        playing = true;
     }
     else {
         playerPause();
-        playing = false;
     }
 
 }
@@ -807,22 +820,28 @@ function playHandler() {
 function playerPause() {
 
         player.pause().then(() => {}).catch((e) => {});
+        playing = false;
+        playind.innerHTML = "";
 }
 
 function seekAndPlay(cur) {
     let toSet = -1;
-    if(cur == "end1" || cur == "spr1" || cur == "cyl") {
+    if(cur == "end1" || cur == "spr1") {
        toSet = p_times["beg_p1"];
+        playind.innerHTML = "playing: part 1";
     }
     else if(cur == "spr2" || cur == "end2") {
        toSet = p_times["beg_p2"];
+        playind.innerHTML = "playing: part 2";
     }
-    else if(cur == "bridge") {
+    else if(cur == "bridge" || cur == "cyl") {
        toSet = p_times["beg_bridge"];
+       playind.innerHTML = "playing: bridge";
     }
     if(toSet > 0) {
         player.setCurrentTime(toSet).then((sec) => {}).catch((e) => {});
         player.play().then(() => {}).catch((e) => {});
+        playing = true;
     };
 }
 player.on('play', () => {
