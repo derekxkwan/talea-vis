@@ -783,7 +783,7 @@ document.addEventListener('keyup', (e) => {
 
 //== PLAYER STUFF =================================
 
-let p_times = {"beg_p1": 69,  "beg_bridge": 129, "beg_p2": 200};
+let p_times = {"beg_p1": 22,  "beg_bridge": 305, "beg_p2": 353};
 let iframe = document.querySelector('iframe');
 let player = new Vimeo.Player(iframe);
 let playing = false;
